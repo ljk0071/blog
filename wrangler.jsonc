@@ -2,6 +2,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blog",
   "compatibility_date": "2026-09-01",
+  // 대시보드 빌드 명령 설정과 무관하게 deploy/dev 전에 항상 빌드
+  "build": {
+    "command": "npm run build"
+  },
   "assets": {
     "directory": "./dist",
     "not_found_handling": "404-page",
