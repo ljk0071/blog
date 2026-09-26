@@ -1,14 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
+  // Cloudflare Pages 프로젝트 설정 (is-a.dev 등 외부 DNS의 CNAME 커스텀 도메인은 Pages만 지원)
   "name": "blog",
   "compatibility_date": "2026-09-01",
-  // 대시보드 빌드 명령 설정과 무관하게 deploy/dev 전에 항상 빌드
-  "build": {
-    "command": "npm run build"
-  },
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash"
-  }
+  "pages_build_output_dir": "./dist"
 }
