@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 // 블로그는 전부 정적 페이지이므로 어댑터 없이 static 빌드 후
 // Cloudflare Workers Static Assets(wrangler.jsonc)로 서빙한다.
 export default defineConfig({
-  site: 'https://react-tech-blog.example.workers.dev',
+  site: 'https://blog.ssobbs13.workers.dev',
   output: 'static',
   trailingSlash: 'never',
   build: { format: 'file' },

@@ -20,8 +20,7 @@ Astro 7 + React 19 기반 기술 블로그. 정적으로 빌드하고 Cloudflare
 ## 배포
 
 1. `npx wrangler login` (CI에서는 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` 환경변수)
-2. `astro.config.mjs`의 `site`를 실제 도메인으로 변경 (canonical, RSS, sitemap에 사용)
-3. `npm run deploy`
+2. `npm run deploy`
 
 또는 Cloudflare 대시보드 Workers Builds에서 이 저장소를 연결하고 빌드 명령 `npm run build`, 배포 명령 `npx wrangler deploy`로 설정합니다.
 
