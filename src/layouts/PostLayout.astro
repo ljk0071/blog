@@ -1,38 +1,41 @@
 ---
-import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
-import { formatDate, readingTime } from '../lib';
+import { formatDate, readingTime, titleTransition, type Post } from '../lib';
 
 interface Props {
-  post: CollectionEntry<'blog'>;
+  post: Post;
 }
 const { post } = Astro.props;
 const { title, description, pubDate, updatedDate, tags } = post.data;
+const file = post.filePath?.split('/').pop() ?? `${post.id}.md`;
 ---
 
 <BaseLayout title={title} description={description}>
   <article>
     <header class="post-header">
-      <h1>{title}</h1>
-      <p class="muted">
+      <p class="prompt">cat posts/{file}</p>
+      <h1 style={`view-transition-name: ${titleTransition(post.id)}`}>{title}</h1>
+      <p class="meta">
         <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-        {updatedDate && ` · 수정 ${formatDate(updatedDate)}`}
-        {` · ${readingTime(post.body)}분 읽기`}
-      </p>
-      <div class="tags">
+        {updatedDate && <span>(updated {formatDate(updatedDate)})</span>}
+        <span>~{readingTime(post.body)}min</span>
         {tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t}</a>)}
-      </div>
+      </p>
     </header>
     <div class="prose">
       <slot />
     </div>
   </article>
-  <p><a href="/blog">← 글 목록으로</a></p>
+  <p class="back"><a href="/blog">cd ..</a></p>
 </BaseLayout>
 
 <style>
-  .post-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
-  .post-header h1 { margin-bottom: 0.25rem; }
-  .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .post-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border); }
+  .post-header h1 { margin: 0.25rem 0 0.5rem; }
+  .meta { display: flex; gap: 0.4rem 1rem; flex-wrap: wrap; color: var(--muted); font-size: 0.85rem; margin: 0; }
   .prose :global(h2) { margin-top: 2.5rem; }
+  .prose :global(h2)::before { content: '## '; color: var(--muted); text-shadow: none; }
+  .prose :global(h3)::before { content: '### '; color: var(--muted); text-shadow: none; }
+  .back { margin-top: 3rem; }
+  .back a::before { content: '$ '; color: var(--green); }
 </style>

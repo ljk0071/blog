@@ -9,6 +9,13 @@ interface Props {
   description?: string;
 }
 const { title, description = SITE_DESCRIPTION } = Astro.props;
+
+// 이전 화면은 흐려지며 사라지고, 새 화면은 CRT처럼 위에서 아래로 스캔되며 나타난다
+const crt = {
+  old: { name: 'crt-out', duration: '0.18s', easing: 'ease-in', fillMode: 'forwards' },
+  new: { name: 'crt-in', duration: '0.35s', easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)', fillMode: 'backwards' },
+};
+const crtTransition = { forwards: crt, backwards: crt };
 ---
 
 <!doctype html>
@@ -18,7 +25,7 @@ const { title, description = SITE_DESCRIPTION } = Astro.props;
   </head>
   <body>
     <Header />
-    <main>
+    <main transition:animate={crtTransition}>
       <slot />
     </main>
     <Footer />

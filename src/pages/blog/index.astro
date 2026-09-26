@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostSearch from '../../components/PostSearch';
-import { getPosts, formatDate } from '../../lib';
+import { getPosts, formatDate, titleTransition } from '../../lib';
 
 const posts = (await getPosts()).map((p) => ({
   id: p.id,
@@ -9,10 +9,11 @@ const posts = (await getPosts()).map((p) => ({
   description: p.data.description,
   date: formatDate(p.data.pubDate),
   tags: p.data.tags,
+  transition: titleTransition(p.id),
 }));
 ---
 
 <BaseLayout title="글 목록">
-  <h1>글 목록</h1>
-  <PostSearch client:idle posts={posts} />
+  <p class="prompt">ls -lt ~/blog/posts</p>
+  <PostSearch client:load posts={posts} />
 </BaseLayout>

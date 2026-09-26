@@ -11,10 +11,11 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'never',
   build: { format: 'file' },
+  prefetch: { prefetchAll: true },
   integrations: [mdx(), react(), sitemap()],
   markdown: {
     shikiConfig: {
-      themes: { light: 'github-light', dark: 'github-dark' },
+      themes: { light: 'vitesse-light', dark: 'vitesse-dark' },
     },
   },
 });

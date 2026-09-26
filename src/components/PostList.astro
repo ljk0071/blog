@@ -1,0 +1,25 @@
+---
+import { formatDate, titleTransition, type Post } from '../lib';
+
+interface Props {
+  posts: Post[];
+}
+const { posts } = Astro.props;
+---
+
+<ul class="ls">
+  {
+    posts.map((p) => (
+      <li>
+        <div class="row">
+          <span class="perm">-rw-r--r--</span>
+          <time datetime={p.data.pubDate.toISOString()}>{formatDate(p.data.pubDate)}</time>
+          <a class="title" href={`/blog/${p.id}`} style={`view-transition-name: ${titleTransition(p.id)}`}>
+            {p.data.title}
+          </a>
+        </div>
+        <p class="desc">{p.data.description}</p>
+      </li>
+    ))
+  }
+</ul>

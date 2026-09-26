@@ -3,10 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="소개">
-  <h1>소개</h1>
+  <p class="prompt">cat about.md</p>
+  <h1>about</h1>
   <p>React와 프론트엔드 생태계에서 배운 것들을 기록하는 블로그입니다.</p>
-  <p>
-    이 사이트는 <a href="https://astro.build">Astro</a>로 정적 빌드하고, 인터랙션이 필요한 부분만
-    React island로 hydrate하며, <a href="https://pages.cloudflare.com">Cloudflare Pages</a>로 배포됩니다.
-  </p>
+
+  <p class="prompt">cat stack.txt</p>
+  <ul>
+    <li><a href="https://astro.build">Astro</a> — 정적 HTML 생성, 페이지 전환(View Transitions)</li>
+    <li><a href="https://react.dev">React</a> — 인터랙션이 필요한 부분만 island로 hydrate</li>
+    <li><a href="https://pages.cloudflare.com">Cloudflare Pages</a> — 배포</li>
+  </ul>
 </BaseLayout>

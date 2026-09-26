@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPosts, formatDate } from '../../lib';
+import PostList from '../../components/PostList.astro';
+import { getPosts } from '../../lib';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -15,15 +16,7 @@ const { tag, posts } = Astro.props;
 ---
 
 <BaseLayout title={`#${tag}`}>
-  <h1>#{tag}</h1>
-  <ul>
-    {
-      posts.map((p) => (
-        <li>
-          <a href={`/blog/${p.id}`}>{p.data.title}</a> <span class="muted">{formatDate(p.data.pubDate)}</span>
-        </li>
-      ))
-    }
-  </ul>
-  <p><a href="/tags">← 전체 태그</a></p>
+  <p class="prompt">grep -l "#{tag}" ~/blog/posts/*</p>
+  <PostList posts={posts} />
+  <p><a href="/tags">cd ..</a></p>
 </BaseLayout>

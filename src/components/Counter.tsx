@@ -9,16 +9,25 @@ export default function Counter({ initial = 0 }: { initial?: number }) {
         display: 'flex',
         gap: '0.75rem',
         alignItems: 'center',
-        padding: '1rem',
+        flexWrap: 'wrap',
+        padding: '0.75rem 1rem',
         border: '1px dashed var(--border)',
-        borderRadius: 8,
         margin: '1.5rem 0',
       }}
     >
-      <button type="button" onClick={() => setCount((c) => c - 1)}>−</button>
-      <strong style={{ minWidth: '2ch', textAlign: 'center' }}>{count}</strong>
-      <button type="button" onClick={() => setCount((c) => c + 1)}>+</button>
-      <span className="muted">← 실제로 hydrate된 React 컴포넌트입니다</span>
+      <span className="muted">count =</span>
+      <button type="button" onClick={() => setCount((c) => c - 1)} aria-label="감소">
+        -
+      </button>
+      <strong style={{ minWidth: '3ch', textAlign: 'center', color: 'var(--accent)', textShadow: 'var(--glow)' }}>
+        {count}
+      </strong>
+      <button type="button" onClick={() => setCount((c) => c + 1)} aria-label="증가">
+        +
+      </button>
+      <span className="muted" style={{ fontSize: '0.8rem' }}>
+        {'// 실제로 hydrate된 React 컴포넌트'}
+      </span>
     </div>
   );
 }

@@ -8,12 +8,19 @@ const tags = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
 ---
 
 <BaseLayout title="태그">
-  <h1>태그</h1>
-  <div class="cloud">
-    {tags.map(([t, n]) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t} ({n})</a>)}
-  </div>
+  <p class="prompt">ls ~/blog/tags</p>
+  <ul class="cloud">
+    {
+      tags.map(([t, n]) => (
+        <li>
+          <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t}</a>
+          <span class="muted">({n})</span>
+        </li>
+      ))
+    }
+  </ul>
 </BaseLayout>
 
 <style>
-  .cloud { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .cloud { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
 </style>

@@ -6,6 +6,7 @@ export interface PostSummary {
   description: string;
   date: string;
   tags: string[];
+  transition: string;
 }
 
 export default function PostSearch({ posts }: { posts: PostSummary[] }) {
@@ -15,52 +16,59 @@ export default function PostSearch({ posts }: { posts: PostSummary[] }) {
   const filtered = useMemo(() => {
     const q = deferred.trim().toLowerCase();
     if (!q) return posts;
-    return posts.filter((p) =>
-      [p.title, p.description, ...p.tags].some((s) => s.toLowerCase().includes(q)),
-    );
+    return posts.filter((p) => [p.title, p.description, ...p.tags].some((s) => s.toLowerCase().includes(q)));
   }, [deferred, posts]);
 
   return (
     <div>
-      <input
-        type="search"
-        placeholder="제목, 설명, 태그로 검색…"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        aria-label="글 검색"
-        style={{
-          width: '100%',
-          padding: '0.6rem 0.8rem',
-          borderRadius: 8,
-          border: '1px solid var(--border)',
-          background: 'var(--surface)',
-          color: 'var(--fg)',
-          font: 'inherit',
-          marginBottom: '1.5rem',
-        }}
-      />
+      <label className="grep">
+        <span className="prompt">grep -i</span>
+        <input
+          type="search"
+          placeholder='"키워드"'
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="글 검색"
+          autoComplete="off"
+          spellCheck={false}
+        />
+      </label>
+      <p className="muted" style={{ fontSize: '0.8rem', margin: '0.25rem 0 0' }}>
+        total {filtered.length}
+      </p>
       {filtered.length === 0 ? (
-        <p className="muted">검색 결과가 없습니다.</p>
+        <p>
+          <span className="muted">grep: </span>일치하는 글이 없습니다.
+        </p>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        <ul className="ls">
           {filtered.map((p) => (
-            <li key={p.id} style={{ marginBottom: '1.75rem' }}>
-              <a href={`/blog/${p.id}`} style={{ fontSize: '1.2rem', fontWeight: 700 }}>
-                {p.title}
-              </a>
-              <p style={{ margin: '0.25rem 0' }}>{p.description}</p>
-              <div className="muted" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <span>{p.date}</span>
+            <li key={p.id}>
+              <div className="row">
+                <span className="perm">-rw-r--r--</span>
+                <time dateTime={p.date}>{p.date}</time>
+                <a className="title" href={`/blog/${p.id}`} style={{ viewTransitionName: p.transition }}>
+                  {p.title}
+                </a>
+              </div>
+              <p className="desc">{p.description}</p>
+              <span className="tags">
                 {p.tags.map((t) => (
                   <a key={t} className="tag" href={`/tags/${encodeURIComponent(t)}`}>
                     #{t}
                   </a>
                 ))}
-              </div>
+              </span>
             </li>
           ))}
         </ul>
       )}
+      <style>{`
+        .grep { display: flex; align-items: baseline; gap: 0.6rem; border-bottom: 1px solid var(--border); padding: 0.4rem 0; }
+        .grep input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; color: var(--accent); font: inherit; caret-color: var(--accent); }
+        .grep input::placeholder { color: var(--muted); }
+        .grep:focus-within { border-bottom-color: var(--accent); }
+      `}</style>
     </div>
   );
 }

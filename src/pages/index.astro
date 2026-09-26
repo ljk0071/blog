@@ -1,34 +1,30 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
-import { getPosts, formatDate } from '../lib';
+import PostList from '../components/PostList.astro';
+import Typewriter from '../components/Typewriter';
+import { SITE_TITLE } from '../consts';
+import { getPosts } from '../lib';
 
 const posts = (await getPosts()).slice(0, 5);
+const lines = [
+  { cmd: 'whoami', out: 'ssobbs13 — React를 좋아하는 프론트엔드 개발자' },
+  { cmd: 'cat interests.txt', out: 'React · 렌더링 · 웹 성능 · 프론트엔드 아키텍처' },
+  { cmd: 'echo $MOTTO', out: '"측정하고, 이해하고, 기록한다."' },
+];
 ---
 
 <BaseLayout title={SITE_TITLE}>
   <section class="hero">
-    <h1>React를 깊게 파는 기술 블로그</h1>
-    <p class="muted">{SITE_DESCRIPTION}</p>
+    <Typewriter client:load lines={lines} />
   </section>
 
-  <h2>최근 글</h2>
-  <ul class="list">
-    {
-      posts.map((p) => (
-        <li>
-          <a href={`/blog/${p.id}`}>{p.data.title}</a>
-          <span class="muted">{formatDate(p.data.pubDate)}</span>
-        </li>
-      ))
-    }
-  </ul>
-  <p><a href="/blog">전체 글 보기 →</a></p>
+  <section>
+    <p class="prompt">ls -lt ~/blog/posts | head -5</p>
+    <PostList posts={posts} />
+    <p><a href="/blog">./posts --all</a></p>
+  </section>
 </BaseLayout>
 
 <style>
-  .hero { padding: 2rem 0 1rem; }
-  .hero h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); margin: 0 0 0.5rem; }
-  .list { list-style: none; padding: 0; }
-  .list li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .hero { padding: 1rem 0 1.5rem; }
 </style>

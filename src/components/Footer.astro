@@ -1,12 +1,23 @@
 ---
-import { SITE_TITLE } from '../consts';
 const year = new Date().getFullYear();
 ---
 
 <footer>
-  © {year} {SITE_TITLE} · <a href="/rss.xml">RSS</a>
+  <span class="muted">[process exited with code 0]</span>
+  <span>© {year} ssobbs13 · <a href="/rss.xml">rss</a></span>
 </footer>
 
 <style>
-  footer { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 0.875rem; border-top: 1px solid var(--border); }
+  footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    max-width: var(--max);
+    width: 100%;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 2rem;
+    border-top: 1px dashed var(--border);
+    font-size: 0.8rem;
+  }
 </style>

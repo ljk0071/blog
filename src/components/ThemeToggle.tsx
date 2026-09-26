@@ -6,7 +6,7 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    setTheme((document.documentElement.dataset.theme as Theme) ?? 'light');
+    setTheme((document.documentElement.dataset.theme as Theme) ?? 'dark');
   }, []);
 
   const toggle = () => {
@@ -19,21 +19,8 @@ export default function ThemeToggle() {
   };
 
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label="테마 전환"
-      style={{
-        background: 'none',
-        border: '1px solid var(--border)',
-        borderRadius: 8,
-        padding: '0.25rem 0.6rem',
-        cursor: 'pointer',
-        color: 'var(--fg)',
-        minWidth: 40,
-      }}
-    >
-      {theme === null ? ' ' : theme === 'dark' ? '☀️' : '🌙'}
+    <button type="button" onClick={toggle} aria-label="테마 전환" title="테마 전환">
+      {theme === 'light' ? 'crt' : theme === 'dark' ? 'paper' : ' '}
     </button>
   );
 }
