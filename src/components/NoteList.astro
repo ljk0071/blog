@@ -1,0 +1,31 @@
+---
+import { STAGES } from '../consts';
+import { formatDate, titleTransition, type Post } from '../lib';
+
+interface Props {
+  posts: Post[];
+}
+const { posts } = Astro.props;
+---
+
+<ul class="notes" data-no-preview>
+  {
+    posts.map((p) => (
+      <li>
+        <article class="note card">
+          <span class="stage" title={STAGES[p.data.stage].hint}>
+            {STAGES[p.data.stage].emoji} {STAGES[p.data.stage].label}
+          </span>
+          <a class="title" href={`/blog/${p.id}`} style={`view-transition-name: ${titleTransition(p.id)}`}>
+            {p.data.title}
+          </a>
+          <p class="desc">{p.data.description}</p>
+          <div class="meta">
+            <time datetime={p.data.pubDate.toISOString()}>{formatDate(p.data.pubDate)}</time>
+            {p.data.tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t}</a>)}
+          </div>
+        </article>
+      </li>
+    ))
+  }
+</ul>

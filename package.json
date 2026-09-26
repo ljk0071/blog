@@ -15,8 +15,10 @@
     "@astrojs/react": "^7.0.0",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
+    "@fontsource/gowun-batang": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
-    "@fontsource/nanum-gothic-coding": "^5.3.0",
+    "@fontsource/nanum-pen-script": "^5.3.0",
+    "@fontsource/pretendard": "^5.3.0",
     "astro": "^7.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

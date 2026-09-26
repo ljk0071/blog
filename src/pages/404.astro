@@ -2,16 +2,16 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="404">
-  <p class="prompt">cd <span id="path">this-page</span></p>
-  <p><span class="err">bash: cd: No such file or directory</span> <span class="muted">(exit 404)</span></p>
-  <p><a href="/">cd ~</a></p>
+<BaseLayout title="아직 자라지 않은 페이지">
+  <div class="empty">
+    <p class="big" aria-hidden="true">🕳️🌱</p>
+    <h1>여긴 아직 아무것도 자라지 않았어요</h1>
+    <p class="muted">주소가 바뀌었거나, 아직 심지 않은 노트일 수 있어요.</p>
+    <p><a href="/">정원 입구로 돌아가기</a> · <a href="/blog">모든 노트 보기</a></p>
+  </div>
 </BaseLayout>
 
 <style>
-  .err { color: #ff6b6b; }
+  .empty { text-align: center; padding: 3rem 0; }
+  .big { font-size: 3rem; margin: 0; }
 </style>
-
-<script is:inline>
-  document.getElementById('path').textContent = location.pathname;
-</script>

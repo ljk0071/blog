@@ -1,23 +1,15 @@
 ---
+import { PORTFOLIO } from '../consts';
 const year = new Date().getFullYear();
 ---
 
 <footer>
-  <span class="muted">[process exited with code 0]</span>
-  <span>© {year} ssobbs13 · <a href="/rss.xml">rss</a></span>
+  <p class="hand">천천히, 꾸준히 자라는 중 🌱</p>
+  <p class="muted">© {year} ssobbs13 · <a href={PORTFOLIO.url} target="_blank" rel="noopener">포트폴리오</a> · <a href="/rss.xml">RSS</a></p>
 </footer>
 
 <style>
-  footer {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    max-width: var(--max);
-    width: 100%;
-    margin: 0 auto;
-    padding: 1.5rem 1rem 2rem;
-    border-top: 1px dashed var(--border);
-    font-size: 0.8rem;
-  }
+  footer { max-width: var(--wide); width: 100%; margin: 0 auto; padding: 2rem 1rem 3rem; text-align: center; font-size: 0.85rem; }
+  footer p { margin: 0.25rem 0; }
+  .hand { font-size: 1.5rem; }
 </style>

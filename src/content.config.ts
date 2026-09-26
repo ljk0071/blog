@@ -10,6 +10,8 @@ const blog = defineCollection({
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
+    // 🌱 seedling → 🌿 budding → 🌳 evergreen
+    stage: z.enum(['seedling', 'budding', 'evergreen']).default('seedling'),
     draft: z.boolean().default(false),
   }),
 });

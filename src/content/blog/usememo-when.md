@@ -3,6 +3,7 @@ title: 'useMemo, 언제 써야 할까? (React Compiler 시대)'
 description: 'React Compiler가 자동 메모이제이션을 해주는 지금, 수동 useMemo/useCallback이 여전히 필요한 경우를 살펴봅니다.'
 pubDate: 2026-08-28
 tags: ['react', 'performance', 'react-compiler']
+stage: 'seedling'
 ---
 
 React Compiler는 빌드 타임에 컴포넌트를 분석해 값과 콜백을 자동으로 메모이제이션합니다.
@@ -23,3 +24,5 @@ React Compiler는 빌드 타임에 컴포넌트를 분석해 값과 콜백을 �
 ```
 
 감으로 최적화하지 말고 React DevTools Profiler나 `<Profiler>`로 먼저 측정하세요.
+
+> 🌱 아직 새싹 단계의 노트예요. React Compiler의 bail-out 조건을 실제로 측정해 보면서 더 채워 나갈 예정입니다.

@@ -6,7 +6,7 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    setTheme((document.documentElement.dataset.theme as Theme) ?? 'dark');
+    setTheme((document.documentElement.dataset.theme as Theme) ?? 'light');
   }, []);
 
   const toggle = () => {
@@ -19,8 +19,8 @@ export default function ThemeToggle() {
   };
 
   return (
-    <button type="button" onClick={toggle} aria-label="테마 전환" title="테마 전환">
-      {theme === 'light' ? 'crt' : theme === 'dark' ? 'paper' : ' '}
+    <button type="button" onClick={toggle} aria-label="테마 전환" title={theme === 'dark' ? '낮의 정원' : '밤의 정원'}>
+      {theme === null ? ' ' : theme === 'dark' ? '☀︎' : '☾'}
     </button>
   );
 }

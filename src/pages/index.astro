@@ -1,30 +1,70 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PostList from '../components/PostList.astro';
-import Typewriter from '../components/Typewriter';
-import { SITE_TITLE } from '../consts';
-import { getPosts } from '../lib';
+import NoteList from '../components/NoteList.astro';
+import PortfolioCard from '../components/PortfolioCard.astro';
+import GardenGraph from '../components/GardenGraph';
+import { SITE_TITLE, STAGES } from '../consts';
+import { buildGraph, getPosts } from '../lib';
 
-const posts = (await getPosts()).slice(0, 5);
-const lines = [
-  { cmd: 'whoami', out: 'ssobbs13 — React를 좋아하는 프론트엔드 개발자' },
-  { cmd: 'cat interests.txt', out: 'React · 렌더링 · 웹 성능 · 프론트엔드 아키텍처' },
-  { cmd: 'echo $MOTTO', out: '"측정하고, 이해하고, 기록한다."' },
-];
+const posts = await getPosts();
+const graph = buildGraph(posts);
 ---
 
-<BaseLayout title={SITE_TITLE}>
+<BaseLayout title={SITE_TITLE} wide>
   <section class="hero">
-    <Typewriter client:load lines={lines} />
+    <div class="intro">
+      <p class="hand">안녕하세요, 어서 오세요 👋</p>
+      <h1>React를 <span class="mark">가꾸는</span><br />작은 디지털 정원</h1>
+      <p class="lead">
+        완성된 글만 올리는 블로그 대신, 공부하며 생긴 생각을 <strong>씨앗</strong>처럼 심고 조금씩 다듬어 가는 노트 모음이에요.
+      </p>
+      <ul class="stages">
+        {
+          Object.values(STAGES).map((s) => (
+            <li>
+              <span class="emoji">{s.emoji}</span>
+              <span>
+                <b>{s.label}</b>
+                <br />
+                <span class="muted">{s.hint}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="portfolio-wrap">
+      <PortfolioCard />
+    </div>
   </section>
 
   <section>
-    <p class="prompt">ls -lt ~/blog/posts | head -5</p>
-    <PostList posts={posts} />
-    <p><a href="/blog">./posts --all</a></p>
+    <div class="section-title">
+      <h2>정원 지도</h2>
+      <span class="hand">노드를 끌어보고, 눌러보세요!</span>
+    </div>
+    <GardenGraph client:visible nodes={graph.nodes} links={graph.links} />
+  </section>
+
+  <section>
+    <div class="section-title">
+      <h2>최근에 심은 노트</h2>
+      <a href="/blog">전체 보기 →</a>
+    </div>
+    <NoteList posts={posts.slice(0, 6)} />
   </section>
 </BaseLayout>
 
 <style>
-  .hero { padding: 1rem 0 1.5rem; }
+  .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5rem; align-items: center; padding: 1rem 0 1rem; }
+  .intro h1 { margin: 0.25rem 0 1rem; font-size: clamp(2rem, 6vw, 3rem); }
+  .lead { font-size: 1.05rem; margin: 0 0 1.5rem; }
+  .stages { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; font-size: 0.88rem; line-height: 1.5; }
+  .stages li { display: flex; gap: 0.75rem; align-items: flex-start; }
+  .stages .emoji { font-size: 1.4rem; line-height: 1.2; }
+  .portfolio-wrap { transform: rotate(1.2deg); }
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: 1fr; gap: 2rem; }
+    .portfolio-wrap { transform: none; }
+  }
 </style>

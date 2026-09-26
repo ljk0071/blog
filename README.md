@@ -1,11 +1,13 @@
-# React Tech Blog
+# ssobbs13의 정원
 
-Astro 7 + React 19 기반 기술 블로그. 정적으로 빌드하고 Cloudflare Pages로 배포합니다.
+Astro 7 + React 19 기반 디지털 가든(기술 블로그). 정적으로 빌드하고 Cloudflare Pages로 배포합니다.
 
 ## 구조
 
-- `src/content/blog/` — 글(`.md` / `.mdx`). frontmatter: `title`, `description`, `pubDate`, `updatedDate?`, `tags`, `draft`
-- `src/components/*.tsx` — React island (테마 토글 `client:load`, 글 검색 `client:idle`, MDX 데모 `client:visible`)
+- `src/content/blog/` — 노트(`.md` / `.mdx`). frontmatter: `title`, `description`, `pubDate`, `updatedDate?`, `tags`, `stage`(`seedling`🌱/`budding`🌿/`evergreen`🌳), `draft`
+  - 본문에서 `[텍스트](/blog/<id>)`로 다른 노트를 링크하면 정원 지도·백링크·미리보기에 자동 반영
+- `src/consts.ts` — 사이트 제목, 포트폴리오 섹션 문구(`PORTFOLIO`), 성장 단계 라벨
+- `src/components/*.tsx` — React island: 정원 지도(`GardenGraph`), 링크 미리보기(`LinkPreview`), 노트 검색(`PostSearch`), 테마 토글
 - `wrangler.jsonc` — Pages 설정 (`dist/` 서빙, 404는 `404.html`)
 
 ## 명령어

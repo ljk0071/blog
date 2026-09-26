@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostList from '../../components/PostList.astro';
+import NoteList from '../../components/NoteList.astro';
 import { getPosts } from '../../lib';
 
 export async function getStaticPaths() {
@@ -15,8 +15,11 @@ export async function getStaticPaths() {
 const { tag, posts } = Astro.props;
 ---
 
-<BaseLayout title={`#${tag}`}>
-  <p class="prompt">grep -l "#{tag}" ~/blog/posts/*</p>
-  <PostList posts={posts} />
-  <p><a href="/tags">cd ..</a></p>
+<BaseLayout title={`#${tag}`} wide>
+  <div class="section-title" style="margin-top:0">
+    <h1>#{tag}</h1>
+    <span class="hand">{posts.length}개의 노트</span>
+  </div>
+  <NoteList posts={posts} />
+  <p><a href="/tags">← 모든 화단</a></p>
 </BaseLayout>

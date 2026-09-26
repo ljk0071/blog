@@ -1,29 +1,27 @@
 ---
 import ThemeToggle from './ThemeToggle';
+import { SITE_TITLE, PORTFOLIO } from '../consts';
 
 const links = [
-  { href: '/blog', label: 'posts' },
-  { href: '/tags', label: 'tags' },
-  { href: '/about', label: 'about' },
+  { href: '/blog', label: '노트' },
+  { href: '/tags', label: '태그' },
+  { href: '/about', label: '소개' },
 ];
 const path = Astro.url.pathname;
 ---
 
 <header>
-  <div class="bar">
-    <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span class="win-title">ssobbs13@is-a.dev: ~/blog</span>
-  </div>
   <nav>
-    <a class="brand" href="/"><span class="user">ssobbs13</span><span class="muted">@</span>blog<span class="muted">:~$</span></a>
+    <a class="brand" href="/"><span aria-hidden="true">🌿</span> {SITE_TITLE}</a>
     <div class="links">
       {
         links.map((l) => (
           <a href={l.href} aria-current={path.startsWith(l.href) ? 'page' : undefined}>
-            ./{l.label}
+            {l.label}
           </a>
         ))
       }
+      <a href={PORTFOLIO.url} target="_blank" rel="noopener">포트폴리오 ↗</a>
       <ThemeToggle client:load />
     </div>
   </nav>
@@ -31,39 +29,20 @@ const path = Astro.url.pathname;
 
 <style>
   /* 페이지 전환 시 헤더는 애니메이션 없이 고정 */
-  header { border-bottom: 1px solid var(--border); background: var(--bg); view-transition-name: site-header; }
-  .bar {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.35rem 1rem;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-  .dots { display: inline-flex; gap: 6px; }
-  .dots i { width: 10px; height: 10px; border-radius: 50%; background: #ff5f57; }
-  .dots i:nth-child(2) { background: #febc2e; }
-  .dots i:nth-child(3) { background: #28c840; }
-  .win-title { flex: 1; text-align: center; margin-right: 46px; }
+  header { view-transition-name: site-header; }
   nav {
-    max-width: var(--max);
+    max-width: var(--wide);
     margin: 0 auto;
-    padding: 0.6rem 1rem;
+    padding: 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem 1rem;
     flex-wrap: wrap;
   }
-  a { text-decoration: none; }
-  .brand { font-weight: 700; color: var(--fg); }
-  .brand:hover { color: var(--bg); }
-  .user { color: var(--green); }
-  .links { display: flex; align-items: center; gap: 1rem; }
+  a { background: none; }
+  .brand { font-family: var(--serif); font-weight: 700; font-size: 1.1rem; color: var(--fg); }
+  .links { display: flex; align-items: center; gap: 0.25rem 1.1rem; flex-wrap: wrap; font-size: 0.95rem; }
   .links a { color: var(--muted); }
-  .links a:hover { color: var(--bg); }
-  .links a[aria-current='page'] { color: var(--accent); }
-  @media (max-width: 480px) { .win-title { display: none; } }
+  .links a:hover, .links a[aria-current='page'] { color: var(--fg); background: linear-gradient(transparent 60%, var(--highlight) 60%); }
 </style>

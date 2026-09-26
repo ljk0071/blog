@@ -5,16 +5,21 @@ import { getPosts } from '../../lib';
 const counts = new Map<string, number>();
 for (const p of await getPosts()) for (const t of p.data.tags) counts.set(t, (counts.get(t) ?? 0) + 1);
 const tags = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+const max = Math.max(1, ...counts.values());
 ---
 
 <BaseLayout title="태그">
-  <p class="prompt">ls ~/blog/tags</p>
-  <ul class="cloud">
+  <div class="section-title" style="margin-top:0">
+    <h1>화단 (태그)</h1>
+    <span class="hand">주제별로 모아 심었어요</span>
+  </div>
+  <ul class="beds">
     {
       tags.map(([t, n]) => (
         <li>
-          <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t}</a>
-          <span class="muted">({n})</span>
+          <a class="card" href={`/tags/${encodeURIComponent(t)}`} style={`font-size: ${0.95 + (n / max) * 0.5}rem`}>
+            #{t} <span class="muted">{n}</span>
+          </a>
         </li>
       ))
     }
@@ -22,5 +27,8 @@ const tags = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
 </BaseLayout>
 
 <style>
-  .cloud { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+  .beds { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .beds a { display: inline-block; padding: 0.35rem 1rem; border-radius: 999px; color: var(--fg); background: var(--card); }
+  .beds a:hover { border-color: var(--accent); color: var(--accent); }
+  .beds .muted { font-size: 0.8em; }
 </style>

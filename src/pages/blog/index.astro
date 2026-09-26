@@ -8,12 +8,17 @@ const posts = (await getPosts()).map((p) => ({
   title: p.data.title,
   description: p.data.description,
   date: formatDate(p.data.pubDate),
+  iso: p.data.pubDate.toISOString(),
   tags: p.data.tags,
+  stage: p.data.stage,
   transition: titleTransition(p.id),
 }));
 ---
 
-<BaseLayout title="글 목록">
-  <p class="prompt">ls -lt ~/blog/posts</p>
+<BaseLayout title="모든 노트" wide>
+  <div class="section-title" style="margin-top:0">
+    <h1>모든 노트</h1>
+    <span class="hand">{posts.length}개가 자라는 중</span>
+  </div>
   <PostSearch client:load posts={posts} />
 </BaseLayout>

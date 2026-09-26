@@ -1,41 +1,76 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import { formatDate, readingTime, titleTransition, type Post } from '../lib';
+import NoteList from '../components/NoteList.astro';
+import LinkPreview from '../components/LinkPreview';
+import { STAGES } from '../consts';
+import { backlinks, formatDate, getPosts, previewIndex, readingTime, titleTransition, type Post } from '../lib';
 
 interface Props {
   post: Post;
 }
 const { post } = Astro.props;
-const { title, description, pubDate, updatedDate, tags } = post.data;
-const file = post.filePath?.split('/').pop() ?? `${post.id}.md`;
+const { title, description, pubDate, updatedDate, tags, stage } = post.data;
+const posts = await getPosts();
+const linkedFrom = backlinks(post, posts);
+const related = posts
+  .filter((p) => p.id !== post.id && !linkedFrom.includes(p) && p.data.tags.some((t) => tags.includes(t)))
+  .slice(0, 2);
 ---
 
 <BaseLayout title={title} description={description}>
   <article>
     <header class="post-header">
-      <p class="prompt">cat posts/{file}</p>
+      <p class="stage-line">
+        <span class="stage-pill" title={STAGES[stage].hint}>{STAGES[stage].emoji} {STAGES[stage].label}</span>
+        <span class="hand">{STAGES[stage].hint}</span>
+      </p>
       <h1 style={`view-transition-name: ${titleTransition(post.id)}`}>{title}</h1>
       <p class="meta">
-        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-        {updatedDate && <span>(updated {formatDate(updatedDate)})</span>}
-        <span>~{readingTime(post.body)}min</span>
-        {tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t}</a>)}
+        <span>심은 날 <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time></span>
+        {updatedDate && <span>마지막으로 돌본 날 <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time></span>}
+        <span>{readingTime(post.body)}분</span>
       </p>
+      <p class="tags">{tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t}</a>)}</p>
     </header>
     <div class="prose">
       <slot />
     </div>
   </article>
-  <p class="back"><a href="/blog">cd ..</a></p>
+
+  {
+    linkedFrom.length > 0 && (
+      <section>
+        <div class="section-title">
+          <h2>이 노트를 언급한 곳</h2>
+          <span class="hand">backlinks</span>
+        </div>
+        <NoteList posts={linkedFrom} />
+      </section>
+    )
+  }
+  {
+    related.length > 0 && (
+      <section>
+        <div class="section-title">
+          <h2>같은 화단의 노트</h2>
+          <span class="hand">같은 태그</span>
+        </div>
+        <NoteList posts={related} />
+      </section>
+    )
+  }
+
+  <LinkPreview client:idle items={previewIndex(posts)} />
 </BaseLayout>
 
 <style>
-  .post-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border); }
-  .post-header h1 { margin: 0.25rem 0 0.5rem; }
-  .meta { display: flex; gap: 0.4rem 1rem; flex-wrap: wrap; color: var(--muted); font-size: 0.85rem; margin: 0; }
-  .prose :global(h2) { margin-top: 2.5rem; }
-  .prose :global(h2)::before { content: '## '; color: var(--muted); text-shadow: none; }
-  .prose :global(h3)::before { content: '### '; color: var(--muted); text-shadow: none; }
-  .back { margin-top: 3rem; }
-  .back a::before { content: '$ '; color: var(--green); }
+  .post-header { margin-bottom: 2.5rem; }
+  .post-header h1 { margin: 0.5rem 0 0.75rem; }
+  .stage-line { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin: 0; }
+  .stage-pill { font-size: 0.85rem; padding: 0.15rem 0.75rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .stage-line .hand { font-size: 1.25rem; }
+  .meta { display: flex; gap: 0.25rem 1.25rem; flex-wrap: wrap; color: var(--muted); font-size: 0.9rem; margin: 0; }
+  .tags { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 0.25rem 0 0; }
+  .prose :global(h2) { margin-top: 2.75rem; }
+  .prose :global(a[href^='/blog/'])::after { content: ' 🌱'; font-size: 0.75em; }
 </style>
