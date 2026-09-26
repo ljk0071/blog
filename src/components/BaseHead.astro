@@ -41,7 +41,10 @@ const fullTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   })();
 </script>
-<!-- 같은 사이트 링크에 마우스를 올리면 다음 페이지를 미리 렌더링(Chromium). JS 런타임 없이 동작 -->
+<!--
+  같은 사이트 링크에 마우스를 올리면 다음 페이지 HTML을 미리 받아 둔다(Chromium). JS 런타임 없이 동작.
+  prerender는 이미 렌더링된 페이지로 전환되어 View Transition이 생략되므로 prefetch를 쓴다.
+-->
 <script type="speculationrules" is:inline>
-  { "prerender": [{ "where": { "href_matches": "/*" }, "eagerness": "moderate" }] }
+  { "prefetch": [{ "where": { "href_matches": "/*" }, "eagerness": "moderate" }] }
 </script>
