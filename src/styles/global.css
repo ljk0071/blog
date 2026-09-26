@@ -122,12 +122,18 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 1px solid 
   .ls time { font-size: 0.8rem; }
 }
 
-/* ---------- Page transition: CRT 스캔 리빌 ---------- */
+/* ---------- Page transition (CSS cross-document View Transitions, JS 없음) ---------- */
+@view-transition { navigation: auto; }
+main { view-transition-name: main; }
+::view-transition-group(site-header) { animation: none; }
+::view-transition-old(main) { animation: crt-out 0.18s ease-in forwards; }
+::view-transition-new(main) { animation: crt-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
 @keyframes crt-out { to { opacity: 0; filter: blur(2px); } }
 @keyframes crt-in {
   from { clip-path: inset(0 0 100% 0); opacity: 0.4; }
   to { clip-path: inset(0 0 0 0); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
   .cursor::after { animation: none; }
 }

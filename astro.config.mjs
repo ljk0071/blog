@@ -11,7 +11,6 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'never',
   build: { format: 'file' },
-  prefetch: { prefetchAll: true },
   integrations: [mdx(), react(), sitemap()],
   markdown: {
     shikiConfig: {

@@ -9,7 +9,7 @@ const links = [
 const path = Astro.url.pathname;
 ---
 
-<header transition:persist>
+<header>
   <div class="bar">
     <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
     <span class="win-title">ssobbs13@is-a.dev: ~/blog</span>
@@ -30,7 +30,8 @@ const path = Astro.url.pathname;
 </header>
 
 <style>
-  header { border-bottom: 1px solid var(--border); background: var(--bg); }
+  /* 페이지 전환 시 헤더는 애니메이션 없이 고정 */
+  header { border-bottom: 1px solid var(--border); background: var(--bg); view-transition-name: site-header; }
   .bar {
     display: flex;
     align-items: center;
