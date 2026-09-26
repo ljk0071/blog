@@ -11,6 +11,8 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'never',
   build: { format: 'file' },
+  // 링크에 마우스를 올리면 다음 페이지 HTML을 미리 받아 둔다 (ClientRouter와 함께 사용)
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   integrations: [mdx(), react(), sitemap()],
   markdown: {
     shikiConfig: {

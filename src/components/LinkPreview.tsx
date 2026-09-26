@@ -65,7 +65,10 @@ export default function LinkPreview({ items }: { items: PreviewItem[] }) {
     document.addEventListener('focusin', onFocusIn);
     document.addEventListener('focusout', hide);
     addEventListener('scroll', hide, { passive: true });
+    // ClientRouter로 페이지를 옮기기 시작하면 떠 있는 카드를 닫는다
+    document.addEventListener('astro:before-preparation', hide);
     return () => {
+      document.removeEventListener('astro:before-preparation', hide);
       clearTimeout(timer);
       document.removeEventListener('pointerover', onOver);
       document.removeEventListener('pointerout', onOut);

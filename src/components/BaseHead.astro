@@ -6,6 +6,7 @@ import '@fontsource/gowun-batang/700.css';
 import '@fontsource/nanum-pen-script/400.css';
 import '@fontsource/jetbrains-mono/400.css';
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import { SITE_TITLE, GOOGLE_SITE_VERIFICATION } from '../consts';
 
 interface Props {
@@ -31,20 +32,20 @@ const fullTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
 <meta property="og:description" content={description} />
 {GOOGLE_SITE_VERIFICATION && <meta name="google-site-verification" content={GOOGLE_SITE_VERIFICATION} />}
 <script is:inline>
-  // FOUC 방지: 페인트 전에 테마 적용
+  // FOUC 방지: 페인트 전에 테마 적용.
+  // ClientRouter는 head의 인라인 스크립트를 다시 실행하지 않으므로, 새 문서로 교체되기 직전(before-swap)에도 적용한다.
   (() => {
-    let saved = null;
-    try {
-      saved = localStorage.getItem('theme');
-    } catch {}
-    const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    const apply = (doc) => {
+      let saved = null;
+      try {
+        saved = localStorage.getItem('theme');
+      } catch {}
+      const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      doc.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    };
+    apply(document);
+    document.addEventListener('astro:before-swap', (e) => apply(e.newDocument));
   })();
 </script>
-<!--
-  같은 사이트 링크에 마우스를 올리면 다음 페이지 HTML을 미리 받아 둔다(Chromium). JS 런타임 없이 동작.
-  prerender는 이미 렌더링된 페이지로 전환되어 View Transition이 생략되므로 prefetch를 쓴다.
--->
-<script type="speculationrules" is:inline>
-  { "prefetch": [{ "where": { "href_matches": "/*" }, "eagerness": "moderate" }] }
-</script>
+<!-- 링크 클릭 시 전체 새로고침 대신 새 페이지 HTML만 받아 View Transition으로 교체 -->
+<ClientRouter />

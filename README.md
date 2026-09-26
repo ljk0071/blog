@@ -38,3 +38,14 @@
 3. `astro.config.mjs`의 `site`를 해당 도메인으로 변경
 
 Google Search Console은 DNS TXT 대신 URL 접두어 속성의 HTML 태그 인증을 사용합니다. `src/consts.ts`의 `GOOGLE_SITE_VERIFICATION`에 값을 넣으면 됩니다.
+
+## 페이지 전환 (ClientRouter)
+
+링크 이동은 Astro `<ClientRouter />`가 새 HTML만 받아 View Transition으로 교체합니다. 모든 페이지는 여전히 완성된 정적 HTML이라 SEO에는 영향이 없습니다.
+
+스크립트를 추가할 때 주의할 점:
+
+- 번들되는 `<script>`는 **처음 한 번만** 실행됩니다. 페이지마다 실행해야 하는 코드는 `document.addEventListener('astro:page-load', ...)` 안에 넣습니다.
+- 방문 통계(GA 등)는 첫 로드 외에 페이지 이동마다 `astro:page-load`에서 page view를 보내야 합니다.
+- head의 인라인 스크립트는 다시 실행되지 않습니다(테마 적용은 `astro:before-swap`에서 처리 중).
+- body의 `is:inline` 스크립트는 페이지 교체 시 다시 실행됩니다.
