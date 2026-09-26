@@ -1,26 +1,65 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PortfolioCard from '../components/PortfolioCard.astro';
+import Principles from '../components/Principles.astro';
+import NoteList from '../components/NoteList.astro';
+import { PROFILE } from '../consts';
+import { getPosts } from '../lib';
+
+const cases = (await getPosts()).filter((p) => p.data.tags.includes('troubleshooting'));
+const { career } = PROFILE;
 ---
 
 <BaseLayout title="소개">
   <p class="hand">정원사를 소개합니다</p>
-  <h1>안녕하세요, ssobbs13입니다</h1>
-  <p>React와 프론트엔드 생태계에서 배운 것들을 기록하는 디지털 정원입니다.</p>
-
-  <h2>왜 '정원'인가요?</h2>
+  <h1>안녕하세요, {PROFILE.role} ssobbs13입니다</h1>
   <p>
-    블로그 글은 한 번 발행하면 끝나는 경우가 많지만, 이곳의 노트는 <span class="mark">계속 자랍니다</span>. 막 떠오른 생각은 🌱 새싹으로
-    심고, 이해가 깊어질수록 다듬어 🌿 → 🌳 로 키워 나가요. 노트끼리는 링크로 서로 연결됩니다.
+    문제를 대할 때 해결했다는 결과보다도, <span class="mark">어떻게 발생했고 어떤 방식으로 해결했는지</span>를 파고듭니다. 이 정원은 그 과정을
+    남기는 곳이에요.
   </p>
 
-  <h2>이 정원은 이렇게 만들었어요</h2>
-  <ul>
-    <li><a href="https://astro.build">Astro</a> — 정적 HTML 생성, CSS View Transitions로 페이지 전환</li>
-    <li><a href="https://react.dev">React</a> — 정원 지도, 링크 미리보기, 검색처럼 인터랙션이 필요한 부분만 island로</li>
-    <li><a href="https://pages.cloudflare.com">Cloudflare Pages</a> — 배포</li>
-  </ul>
+  <h2>일하는 방식</h2>
+  <Principles />
 
-  <h2>더 알아보기</h2>
+  <h2>경력 <span class="muted small">{PROFILE.years}</span></h2>
+  <div class="career card">
+    <div class="head">
+      <strong>🏢 {career.company}</strong>
+      <span class="muted">{career.period} ({career.duration}) · {career.title}</span>
+    </div>
+    <p>{career.summary}</p>
+    <ul class="stack">{PROFILE.stack.map((s) => <li>{s}</li>)}</ul>
+  </div>
+
+  {
+    cases.length > 0 && (
+      <>
+        <h2>파고들었던 문제들</h2>
+        <NoteList posts={cases} />
+      </>
+    )
+  }
+
+  <h2>이 정원은 왜 '정원'인가요?</h2>
+  <p>
+    블로그 글은 한 번 발행하면 끝나는 경우가 많지만, 이곳의 노트는 <b>계속 자랍니다</b>. 막 떠오른 생각은 🌱 새싹으로 심고, 이해가 깊어질수록
+    다듬어 🌿 → 🌳 로 키워 나가요. 노트끼리는 링크로 서로 연결됩니다.
+  </p>
+  <p class="muted small">
+    만든 도구: <a href="https://astro.build">Astro</a>(정적 HTML) · <a href="https://react.dev">React</a>(정원 지도·미리보기 같은 인터랙션만 island로) ·
+    <a href="https://pages.cloudflare.com">Cloudflare Pages</a>
+  </p>
+
+  <h2>정원 밖의 기록</h2>
   <PortfolioCard />
 </BaseLayout>
+
+<style>
+  .small { font-size: 0.85rem; font-family: var(--sans); font-weight: 400; }
+  .career { padding: 1.1rem 1.4rem; }
+  .career .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; }
+  .career .head strong { font-family: var(--serif); font-size: 1.1rem; }
+  .career p { margin: 0.5rem 0 0.75rem; }
+  .stack { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .stack li { font-family: var(--mono); font-size: 0.78rem; padding: 0.1rem 0.7rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+</style>

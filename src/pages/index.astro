@@ -2,8 +2,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoteList from '../components/NoteList.astro';
 import PortfolioCard from '../components/PortfolioCard.astro';
+import Principles from '../components/Principles.astro';
 import GardenGraph from '../components/GardenGraph';
-import { SITE_TITLE, STAGES } from '../consts';
+import { SITE_TITLE, PROFILE } from '../consts';
 import { buildGraph, getPosts } from '../lib';
 
 const posts = await getPosts();
@@ -13,29 +14,27 @@ const graph = buildGraph(posts);
 <BaseLayout title={SITE_TITLE} wide>
   <section class="hero">
     <div class="intro">
-      <p class="hand">안녕하세요, 어서 오세요 👋</p>
-      <h1>React를 <span class="mark">가꾸는</span><br />작은 디지털 정원</h1>
+      <p class="hand">안녕하세요, {PROFILE.role} ssobbs13입니다 👋</p>
+      <h1>해결했다는 결과보다<br /><span class="mark">어떻게</span>를 기록하는 정원</h1>
       <p class="lead">
-        완성된 글만 올리는 블로그 대신, 공부하며 생긴 생각을 <strong>씨앗</strong>처럼 심고 조금씩 다듬어 가는 노트 모음이에요.
+        문제가 <strong>어떻게 발생했고</strong>, <strong>어떤 방식으로 해결했는지</strong>를 파고든 기록을 씨앗처럼 심고 조금씩 다듬어 가요.
       </p>
-      <ul class="stages">
-        {
-          Object.values(STAGES).map((s) => (
-            <li>
-              <span class="emoji">{s.emoji}</span>
-              <span>
-                <b>{s.label}</b>
-                <br />
-                <span class="muted">{s.hint}</span>
-              </span>
-            </li>
-          ))
-        }
-      </ul>
+      <p class="career muted">
+        {PROFILE.career.company} · {PROFILE.role} {PROFILE.years} — 일일 약 10만 건의 주차 데이터 결제·정산·통계
+      </p>
+      <ul class="stack">{PROFILE.stack.map((s) => <li>{s}</li>)}</ul>
     </div>
     <div class="portfolio-wrap">
       <PortfolioCard />
     </div>
+  </section>
+
+  <section class="wide-principles">
+    <div class="section-title">
+      <h2>이렇게 일해요</h2>
+      <a href="/about">더 알아보기 →</a>
+    </div>
+    <Principles />
   </section>
 
   <section>
@@ -56,15 +55,17 @@ const graph = buildGraph(posts);
 </BaseLayout>
 
 <style>
-  .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5rem; align-items: center; padding: 1rem 0 1rem; }
-  .intro h1 { margin: 0.25rem 0 1rem; font-size: clamp(2rem, 6vw, 3rem); }
-  .lead { font-size: 1.05rem; margin: 0 0 1.5rem; }
-  .stages { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; font-size: 0.88rem; line-height: 1.5; }
-  .stages li { display: flex; gap: 0.75rem; align-items: flex-start; }
-  .stages .emoji { font-size: 1.4rem; line-height: 1.2; }
+  .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5rem; align-items: center; padding: 1rem 0; }
+  .intro h1 { margin: 0.25rem 0 1rem; font-size: clamp(1.9rem, 5.5vw, 2.8rem); }
+  .lead { font-size: 1.05rem; margin: 0 0 1rem; }
+  .career { font-size: 0.9rem; margin: 0 0 0.75rem; }
+  .stack { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .stack li { font-family: var(--mono); font-size: 0.78rem; padding: 0.1rem 0.7rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
   .portfolio-wrap { transform: rotate(1.2deg); }
+  .wide-principles :global(.principles) { grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 760px) {
     .hero { grid-template-columns: 1fr; gap: 2rem; }
     .portfolio-wrap { transform: none; }
+    .wide-principles :global(.principles) { grid-template-columns: 1fr; }
   }
 </style>

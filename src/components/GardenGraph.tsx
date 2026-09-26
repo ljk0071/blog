@@ -5,7 +5,7 @@ const PAD = 24;
 type Dims = { W: number; H: number; minW: number; margin: number };
 // 넓은 화면은 가로형, 좁은 화면(모바일)은 세로형으로 배치해 글자가 작아지지 않게 한다
 const WIDE: Dims = { W: 640, H: 380, minW: 560, margin: 70 };
-const NARROW: Dims = { W: 360, H: 640, minW: 360, margin: 55 };
+const NARROW: Dims = { W: 360, H: 640, minW: 360, margin: 105 };
 
 type Vec = { x: number; y: number; vx: number; vy: number };
 
@@ -19,13 +19,21 @@ function initialPositions(n: number, { W, H }: Dims): Vec[] {
 }
 
 /** 아주 작은 force 시뮬레이션 한 스텝 (반발력 + 링크 스프링 + 중심 인력) */
-function step(pos: Vec[], edges: [number, number, number][], alpha: number, pinned: number | null, { W, H }: Dims) {
+function step(
+  pos: Vec[],
+  edges: [number, number, number][],
+  alpha: number,
+  pinned: number | null,
+  { W, H }: Dims,
+  charge: number[],
+) {
   for (let i = 0; i < pos.length; i++) {
     for (let j = i + 1; j < pos.length; j++) {
       const dx = pos[j].x - pos[i].x;
       const dy = pos[j].y - pos[i].y;
       const d2 = Math.max(dx * dx + dy * dy, 64);
-      const f = (3400 * alpha) / d2;
+      // 글 노드는 라벨이 길어서 더 강하게 밀어낸다
+      const f = (3400 * charge[i] * charge[j] * alpha) / d2;
       const d = Math.sqrt(d2);
       pos[i].vx -= (dx / d) * f;
       pos[i].vy -= (dy / d) * f;
@@ -50,8 +58,8 @@ function step(pos: Vec[], edges: [number, number, number][], alpha: number, pinn
       continue;
     }
     // 긴 축 방향으로는 약하게, 짧은 축 방향으로는 강하게 중심으로 당긴다
-    p.vx += (W / 2 - p.x) * (W > H ? 0.006 : 0.014) * alpha;
-    p.vy += (H / 2 - p.y) * (W > H ? 0.014 : 0.006) * alpha;
+    p.vx += (W / 2 - p.x) * (W > H ? 0.005 : 0.01) * alpha;
+    p.vy += (H / 2 - p.y) * (W > H ? 0.01 : 0.005) * alpha;
     p.vx *= 0.6;
     p.vy *= 0.6;
     p.x = Math.min(W - PAD, Math.max(PAD, p.x + p.vx));
@@ -60,7 +68,7 @@ function step(pos: Vec[], edges: [number, number, number][], alpha: number, pinn
 }
 
 const STAGE_FILL = { seedling: '#a8d5a2', budding: '#6fae7c', evergreen: '#3f7a52' } as const;
-const short = (s: string, n = 16) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+const short = (s: string, n = 13) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
 export default function GardenGraph({ nodes, links }: { nodes: GraphNode[]; links: GraphLink[] }) {
   const index = useMemo(() => new Map(nodes.map((n, i) => [n.id, i])), [nodes]);
@@ -80,6 +88,8 @@ export default function GardenGraph({ nodes, links }: { nodes: GraphNode[]; link
     return m;
   }, [nodes, edges]);
 
+  const charge = useMemo(() => nodes.map((n) => (n.kind === 'post' ? 2.2 : 1)), [nodes]);
+
   // SSR은 가로형으로 렌더링하고, hydrate 후 좁은 화면이면 세로형으로 다시 배치한다
   const [dims, setDims] = useState<Dims>(WIDE);
   const figRef = useRef<HTMLElement>(null);
@@ -90,9 +100,9 @@ export default function GardenGraph({ nodes, links }: { nodes: GraphNode[]; link
   // 미리 안정화시킨 배치 → 첫 화면부터 정돈된 그래프 (결정적이라 SSR과 hydrate 결과가 같다)
   const settled = useMemo(() => {
     const pos = initialPositions(nodes.length, dims);
-    for (let t = 0; t < 400; t++) step(pos, edges, 1 - t / 420, null, dims);
+    for (let t = 0; t < 600; t++) step(pos, edges, 1 - t / 620, null, dims, charge);
     return pos;
-  }, [nodes, edges, dims]);
+  }, [nodes, edges, dims, charge]);
 
   // 안정화된 배치에 딱 맞게 확대(viewBox fit) → 노드가 적어도 화면을 꽉 채운다
   const viewBox = useMemo(() => {
@@ -125,7 +135,7 @@ export default function GardenGraph({ nodes, links }: { nodes: GraphNode[]; link
     cancelAnimationFrame(raf.current);
     let alpha = 0.5;
     const tick = () => {
-      step(posRef.current, edges, alpha, drag.current?.i ?? null, dims);
+      step(posRef.current, edges, alpha, drag.current?.i ?? null, dims, charge);
       setFrame((f) => f + 1);
       alpha *= drag.current ? 1 : 0.97;
       if (alpha > 0.02) raf.current = requestAnimationFrame(tick);
@@ -214,7 +224,7 @@ export default function GardenGraph({ nodes, links }: { nodes: GraphNode[]; link
                 fill={post ? STAGE_FILL[n.stage ?? 'seedling'] : 'var(--muted)'}
               />
               <text x={pos[i].x} y={pos[i].y + (post ? 24 : 16)} textAnchor="middle">
-                {post ? (i === active ? n.label : short(n.label)) : n.label}
+                {post ? (i === active ? short(n.label, 28) : short(n.label.split(':')[0])) : n.label}
               </text>
             </a>
           );
@@ -239,7 +249,7 @@ export default function GardenGraph({ nodes, links }: { nodes: GraphNode[]; link
         .garden-graph .n.tag text { fill: var(--muted); font-size: 11px; }
         .garden-graph .n:focus-visible { outline: none; }
         @media (max-width: 600px) {
-          .garden-graph .n.post text { font-size: 20px; }
+          .garden-graph .n.post text { font-size: 18px; }
           .garden-graph .n.tag text { font-size: 17px; }
         }
         .garden-graph .n:focus-visible circle { stroke: var(--accent); stroke-width: 3; }

@@ -49,9 +49,14 @@ export interface GraphLink {
   kind: 'link' | 'tag';
 }
 
-/** 글 ↔ 글(본문 링크), 글 ↔ 태그 관계로 정원 지도를 만든다 */
-export function buildGraph(posts: Post[]) {
+/**
+ * 글 ↔ 글(본문 링크), 글 ↔ 태그 관계로 정원 지도를 만든다.
+ * 글 하나에만 달린 태그는 연결 정보가 없어 지도를 복잡하게만 하므로 뺀다.
+ */
+export function buildGraph(posts: Post[], minTagPosts = 2) {
   const ids = new Set(posts.map((p) => p.id));
+  const tagCount = new Map<string, number>();
+  for (const p of posts) for (const t of p.data.tags) tagCount.set(t, (tagCount.get(t) ?? 0) + 1);
   const nodes: GraphNode[] = posts.map((p) => ({
     id: `p:${p.id}`,
     kind: 'post',
@@ -63,6 +68,7 @@ export function buildGraph(posts: Post[]) {
   const tags = new Set<string>();
   for (const p of posts) {
     for (const t of p.data.tags) {
+      if ((tagCount.get(t) ?? 0) < minTagPosts) continue;
       tags.add(t);
       links.push({ source: `p:${p.id}`, target: `t:${t}`, kind: 'tag' });
     }
