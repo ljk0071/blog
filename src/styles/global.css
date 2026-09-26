@@ -143,10 +143,12 @@ button:hover { border-color: var(--accent); color: var(--accent); }
 @view-transition { navigation: auto; }
 main { view-transition-name: main; }
 ::view-transition-group(site-header) { animation: none; }
-::view-transition-old(main) { animation: leaf-out 0.2s ease-in forwards; }
-::view-transition-new(main) { animation: leaf-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
-@keyframes leaf-out { to { opacity: 0; transform: translateY(-6px); } }
-@keyframes leaf-in { from { opacity: 0; transform: translateY(10px); } }
+/* 본문은 움직이지 않고 짧게 교차 페이드, 목록 ↔ 본문의 글 제목만 자리를 이어서 이동 */
+::view-transition-old(main) { animation: vt-fade-out 90ms ease-out both; }
+::view-transition-new(main) { animation: vt-fade-in 160ms ease-in 40ms both; }
+::view-transition-group(*) { animation-duration: 280ms; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
   .note, .note:hover { transition: none; transform: none; }
