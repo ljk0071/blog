@@ -1,0 +1,39 @@
+---
+title: 'Astro + React Islands로 기술 블로그 만들기'
+description: '정적 HTML 위에 필요한 곳만 React를 hydrate하는 Islands 아키텍처를 실제 예제로 살펴봅니다.'
+pubDate: 2026-09-20
+tags: ['astro', 'react', 'architecture']
+---
+
+import Counter from '../../components/Counter';
+
+블로그는 대부분 **읽기 전용 콘텐츠**입니다. 모든 페이지를 SPA로 만들면 읽기만 하는 사용자도
+React 런타임 전체를 내려받아야 하죠. Astro의 Islands 아키텍처는 이 문제를 해결합니다.
+
+## Islands란?
+
+페이지는 기본적으로 JavaScript가 0KB인 정적 HTML이고, 인터랙션이 필요한 컴포넌트만
+`client:*` 디렉티브로 "섬"처럼 hydrate합니다.
+
+```astro
+---
+import Counter from '../components/Counter';
+---
+<Counter client:visible initial={3} />
+```
+
+아래는 이 MDX 글 안에 실제로 삽입된 React 컴포넌트입니다.
+
+<Counter client:visible initial={3} />
+
+## hydration 디렉티브 비교
+
+| 디렉티브 | hydrate 시점 |
+| --- | --- |
+| `client:load` | 페이지 로드 직후 |
+| `client:idle` | `requestIdleCallback` 시점 |
+| `client:visible` | 뷰포트에 들어왔을 때 |
+| `client:media` | 미디어 쿼리 일치 시 |
+| `client:only` | SSR 없이 클라이언트에서만 렌더 |
+
+> 이 블로그의 테마 토글은 `client:load`, 글 검색은 `client:idle`, 위 카운터는 `client:visible`을 사용합니다.

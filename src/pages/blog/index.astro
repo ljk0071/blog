@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostSearch from '../../components/PostSearch';
+import { getPosts, formatDate } from '../../lib';
+
+const posts = (await getPosts()).map((p) => ({
+  id: p.id,
+  title: p.data.title,
+  description: p.data.description,
+  date: formatDate(p.data.pubDate),
+  tags: p.data.tags,
+}));
+---
+
+<BaseLayout title="글 목록">
+  <h1>글 목록</h1>
+  <PostSearch client:idle posts={posts} />
+</BaseLayout>

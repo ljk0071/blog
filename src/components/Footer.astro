@@ -1,0 +1,12 @@
+---
+import { SITE_TITLE } from '../consts';
+const year = new Date().getFullYear();
+---
+
+<footer>
+  © {year} {SITE_TITLE} · <a href="/rss.xml">RSS</a>
+</footer>
+
+<style>
+  footer { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 0.875rem; border-top: 1px solid var(--border); }
+</style>
