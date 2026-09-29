@@ -9,7 +9,7 @@ export interface PostSummary {
   iso: string;
   tags: string[];
   stage: Stage;
-  transition: string;
+  vt: { card: string; title: string; stage: string };
 }
 
 const FILTERS: (Stage | 'all')[] = ['all', 'seedling', 'budding', 'evergreen'];
@@ -53,11 +53,17 @@ export default function PostSearch({ posts }: { posts: PostSummary[] }) {
         <ul className="notes" data-no-preview>
           {filtered.map((p) => (
             <li key={p.id}>
-              <article className="note card">
-                <span className="stage" title={STAGES[p.stage].hint}>
+              <article className="note">
+                <span className="note-bg" aria-hidden="true" style={{ viewTransitionName: p.vt.card, viewTransitionClass: 'note-card' }} />
+                <span className="stage" title={STAGES[p.stage].hint} style={{ viewTransitionName: p.vt.stage, viewTransitionClass: 'note-part' }}>
                   {STAGES[p.stage].emoji} {STAGES[p.stage].label}
                 </span>
-                <a className="title" href={`/blog/${p.id}`} style={{ viewTransitionName: p.transition }}>
+                <a
+                  className="title"
+                  href={`/blog/${p.id}`}
+                  data-astro-prefetch="viewport"
+                  style={{ viewTransitionName: p.vt.title, viewTransitionClass: 'note-part' }}
+                >
                   {p.title}
                 </a>
                 <p className="desc">{p.description}</p>

@@ -3,7 +3,7 @@ import BaseLayout from './BaseLayout.astro';
 import NoteList from '../components/NoteList.astro';
 import LinkPreview from '../components/LinkPreview';
 import { STAGES } from '../consts';
-import { backlinks, formatDate, getPosts, previewIndex, readingTime, titleTransition, type Post } from '../lib';
+import { backlinks, formatDate, getPosts, noteTransition, previewIndex, readingTime, type Post } from '../lib';
 
 interface Props {
   post: Post;
@@ -11,6 +11,7 @@ interface Props {
 const { post } = Astro.props;
 const { title, description, pubDate, updatedDate, tags, stage } = post.data;
 const posts = await getPosts();
+const vt = noteTransition(post.id);
 const linkedFrom = backlinks(post, posts);
 const related = posts
   .filter((p) => p.id !== post.id && !linkedFrom.includes(p) && p.data.tags.some((t) => tags.includes(t)))
@@ -19,12 +20,13 @@ const related = posts
 
 <BaseLayout title={title} description={description}>
   <article>
-    <header class="post-header">
+    <header class="post-header note-header">
+      <span class="note-bg" aria-hidden="true" style={`view-transition-name: ${vt.card}; view-transition-class: note-card`}></span>
       <p class="stage-line">
-        <span class="stage-pill" title={STAGES[stage].hint}>{STAGES[stage].emoji} {STAGES[stage].label}</span>
+        <span class="stage-pill" title={STAGES[stage].hint} style={`view-transition-name: ${vt.stage}; view-transition-class: note-part`}>{STAGES[stage].emoji} {STAGES[stage].label}</span>
         <span class="hand">{STAGES[stage].hint}</span>
       </p>
-      <h1 style={`view-transition-name: ${titleTransition(post.id)}`}>{title}</h1>
+      <h1 style={`view-transition-name: ${vt.title}; view-transition-class: note-part`}>{title}</h1>
       <p class="meta">
         <span>심은 날 <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time></span>
         {updatedDate && <span>마지막으로 돌본 날 <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time></span>}
@@ -64,7 +66,8 @@ const related = posts
 </BaseLayout>
 
 <style>
-  .post-header { margin-bottom: 2.5rem; }
+  /* 목록의 노트 카드가 그대로 커져서 이 헤더가 된다 */
+  .post-header { margin-bottom: 2.5rem; padding: 1.5rem 1.75rem 1.4rem; }
   .post-header h1 { margin: 0.5rem 0 0.75rem; }
   .stage-line { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin: 0; }
   .stage-pill { font-size: 0.85rem; padding: 0.15rem 0.75rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }

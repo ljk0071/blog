@@ -1,6 +1,6 @@
 ---
 import { STAGES } from '../consts';
-import { formatDate, titleTransition, type Post } from '../lib';
+import { formatDate, noteTransition, type Post } from '../lib';
 
 interface Props {
   posts: Post[];
@@ -10,13 +10,21 @@ const { posts } = Astro.props;
 
 <ul class="notes" data-no-preview>
   {
-    posts.map((p) => (
+    posts.map((p) => {
+      const vt = noteTransition(p.id);
+      return (
       <li>
-        <article class="note card">
-          <span class="stage" title={STAGES[p.data.stage].hint}>
+        <article class="note">
+          <span class="note-bg" aria-hidden="true" style={`view-transition-name: ${vt.card}; view-transition-class: note-card`} />
+          <span class="stage" title={STAGES[p.data.stage].hint} style={`view-transition-name: ${vt.stage}; view-transition-class: note-part`}>
             {STAGES[p.data.stage].emoji} {STAGES[p.data.stage].label}
           </span>
-          <a class="title" href={`/blog/${p.id}`} style={`view-transition-name: ${titleTransition(p.id)}`}>
+          <a
+            class="title"
+            href={`/blog/${p.id}`}
+            data-astro-prefetch="viewport"
+            style={`view-transition-name: ${vt.title}; view-transition-class: note-part`}
+          >
             {p.data.title}
           </a>
           <p class="desc">{p.data.description}</p>
@@ -26,6 +34,7 @@ const { posts } = Astro.props;
           </div>
         </article>
       </li>
-    ))
+      );
+    })
   }
 </ul>

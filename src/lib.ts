@@ -17,8 +17,14 @@ export function readingTime(body = '') {
   return Math.max(1, Math.round(body.length / 500));
 }
 
-// 글 제목이 목록 ↔ 본문 사이에서 이어지도록 쓰는 view-transition-name
-export const titleTransition = (id: string) => `post-${id.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+/**
+ * 목록의 노트 카드 ↔ 글 헤더를 이어 주는 view-transition-name 묶음.
+ * 카드 상자는 헤더 영역으로, 단계 표시와 제목은 각각 제자리로 커지며 이동한다.
+ */
+export const noteTransition = (id: string) => {
+  const key = id.replace(/[^a-zA-Z0-9_-]/g, '-');
+  return { card: `note-card-${key}`, title: `note-title-${key}`, stage: `note-stage-${key}` };
+};
 
 /** 본문에서 다른 글로 가는 내부 링크(/blog/<id>)를 뽑는다 */
 export function outgoingLinks(post: Post, ids: Set<string>) {

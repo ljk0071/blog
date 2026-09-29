@@ -131,10 +131,21 @@ button:hover { border-color: var(--accent); color: var(--accent); }
   padding: 1.1rem 1.25rem;
   transition: transform 0.2s, box-shadow 0.2s;
 }
+/* 카드 배경은 별도 요소: 페이지 전환 때 이 상자만 글 헤더 크기로 커진다 */
+.note-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+.note-header { position: relative; isolation: isolate; }
 .note:hover { transform: translateY(-3px) rotate(-0.4deg); }
 .note .title { font-family: var(--serif); font-weight: 700; font-size: 1.1rem; line-height: 1.45; color: var(--fg); background: none; }
 .note .title::after { content: ''; position: absolute; inset: 0; }
-.note { position: relative; }
+.note { position: relative; isolation: isolate; }
 .note .desc { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.65; flex: 1; }
 .note .meta { display: flex; gap: 0.5rem 0.9rem; flex-wrap: wrap; align-items: center; font-size: 0.82rem; color: var(--muted); }
 .note .meta a { position: relative; z-index: 1; }
@@ -142,10 +153,28 @@ button:hover { border-color: var(--accent); color: var(--accent); }
 /* ---------- Page transition (ClientRouter가 View Transitions API로 실행) ---------- */
 main { view-transition-name: main; }
 ::view-transition-group(site-header) { animation: none; }
-/* 본문은 움직이지 않고 짧게 교차 페이드, 목록 ↔ 본문의 글 제목만 자리를 이어서 이동 */
-::view-transition-old(main) { animation: vt-fade-out 90ms ease-out both; }
-::view-transition-new(main) { animation: vt-fade-in 160ms ease-in 40ms both; }
-::view-transition-group(*) { animation-duration: 280ms; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+/* 본문: 이전 화면은 빠르게 사라지고, 새 본문은 카드가 거의 펼쳐진 뒤에 나타난다 */
+::view-transition-old(main) { animation: vt-fade-out 120ms ease-out both; }
+::view-transition-new(main) { animation: vt-fade-in 260ms ease-out 180ms both; }
+
+/* 노트 카드 → 글 헤더: 상자·단계·제목이 각자 제자리로 커지며 이동 (ease-out-quint) */
+::view-transition-group(*.note-card),
+::view-transition-group(*.note-part) {
+  animation-duration: 440ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* 배경 상자는 글자가 없어서 늘려도 왜곡이 보이지 않는다 */
+::view-transition-old(*.note-card),
+::view-transition-new(*.note-card) { height: 100%; }
+/* 제목·단계: 이전 글자는 바로 넘겨주고 새 글자가 이어받아 커진다 */
+::view-transition-old(*.note-part) { animation: vt-fade-out 110ms ease-out both; }
+::view-transition-new(*.note-part) { animation: vt-fade-in 170ms ease-out both; }
+/* 짝이 없는 카드(클릭하지 않은 카드, 새 페이지에만 있는 카드)는 본문과 같은 타이밍으로 */
+::view-transition-old(*.note-card):only-child,
+::view-transition-old(*.note-part):only-child { animation: vt-fade-out 120ms ease-out both; }
+::view-transition-new(*.note-card):only-child,
+::view-transition-new(*.note-part):only-child { animation: vt-fade-in 260ms ease-out 180ms both; }
+
 @keyframes vt-fade-out { to { opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
