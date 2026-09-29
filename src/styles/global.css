@@ -150,6 +150,17 @@ button:hover { border-color: var(--accent); color: var(--accent); }
 .note .meta { display: flex; gap: 0.5rem 0.9rem; flex-wrap: wrap; align-items: center; font-size: 0.82rem; color: var(--muted); }
 .note .meta a { position: relative; z-index: 1; }
 
+/* ---------- 글 헤더·본문 (글 페이지와 오버레이가 함께 사용) ---------- */
+.post-header { margin-bottom: 2.5rem; padding: 1.5rem 1.75rem 1.4rem; }
+.post-header h1 { margin: 0.5rem 0 0.75rem; }
+.stage-line { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin: 0; }
+.stage-pill { display: inline-block; font-size: 0.85rem; padding: 0.15rem 0.75rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.stage-line .hand { font-size: 1.25rem; }
+.post-meta { display: flex; gap: 0.25rem 1.25rem; flex-wrap: wrap; color: var(--muted); font-size: 0.9rem; margin: 0; }
+.post-tags { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 0.25rem 0 0; }
+.prose h2 { margin-top: 2.75rem; }
+.prose a[href^='/blog/']::after { content: ' 🌱'; font-size: 0.75em; }
+
 /* ---------- Page transition (ClientRouter가 View Transitions API로 실행) ---------- */
 main { view-transition-name: main; }
 ::view-transition-group(site-header) { animation: none; }
@@ -183,3 +194,23 @@ main { view-transition-name: main; }
   ::view-transition-new(*) { animation: none !important; }
   .note, .note:hover { transition: none; transform: none; }
 }
+
+/* 노트 검색 (/blog) */
+.search-bar { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+.search-bar input { width: 100%; font: inherit; padding: 0.7rem 1.1rem; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); box-shadow: var(--shadow); }
+.search-bar input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.filters button { font-size: 0.85rem; }
+.filters button[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: var(--card); }
+
+/* ---------- 글 오버레이 (목록에서 카드를 누르면 열림) ---------- */
+.ov-root { position: fixed; inset: 0; z-index: 45; }
+.ov-backdrop, .ov-backdrop-fill { position: absolute; inset: 0; }
+.ov-backdrop-fill { background: var(--bg); }
+.ov-scroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; }
+.ov-page { position: relative; min-height: 100%; }
+.ov-page-bg { position: absolute; inset: 0; background: var(--bg); box-shadow: var(--shadow); }
+.ov-inner { position: relative; max-width: var(--max); margin: 0 auto; padding: 1rem 1rem 4rem; }
+.ov-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+.ov-bar .hand { font-size: 1.15rem; color: var(--muted); }
+@media (hover: hover) and (pointer: fine) { .ov-bar .hand { display: none; } }

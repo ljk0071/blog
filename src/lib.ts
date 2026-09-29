@@ -95,3 +95,18 @@ export function previewIndex(posts: Post[]) {
   }));
 }
 export type PreviewItem = ReturnType<typeof previewIndex>[number];
+
+/** 노트 목록(React)과 글 오버레이에 넘기는 요약 데이터 */
+export function noteSummaries(posts: Post[]) {
+  return posts.map((p) => ({
+    id: p.id,
+    title: p.data.title,
+    description: p.data.description,
+    date: formatDate(p.data.pubDate),
+    iso: p.data.pubDate.toISOString(),
+    tags: p.data.tags,
+    stage: p.data.stage,
+    minutes: readingTime(p.body),
+  }));
+}
+export type NoteSummary = ReturnType<typeof noteSummaries>[number];

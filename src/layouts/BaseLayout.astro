@@ -2,7 +2,9 @@
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import LinkPreview from '../components/LinkPreview';
 import { SITE_DESCRIPTION } from '../consts';
+import { getPosts, previewIndex } from '../lib';
 
 interface Props {
   title: string;
@@ -10,6 +12,7 @@ interface Props {
   wide?: boolean;
 }
 const { title, description = SITE_DESCRIPTION, wide = false } = Astro.props;
+const previews = previewIndex(await getPosts());
 ---
 
 <!doctype html>
@@ -23,5 +26,7 @@ const { title, description = SITE_DESCRIPTION, wide = false } = Astro.props;
       <slot />
     </main>
     <Footer />
+    <!-- 본문·오버레이 속 다른 노트 링크의 미리보기 카드 -->
+    <LinkPreview client:idle items={previews} />
   </body>
 </html>

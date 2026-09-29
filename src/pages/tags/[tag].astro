@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import NoteList from '../../components/NoteList.astro';
-import { getPosts } from '../../lib';
+import NoteBrowser from '../../components/NoteBrowser';
+import { SITE_TITLE } from '../../consts';
+import { getPosts, noteSummaries } from '../../lib';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -20,6 +21,6 @@ const { tag, posts } = Astro.props;
     <h1>#{tag}</h1>
     <span class="hand">{posts.length}개의 노트</span>
   </div>
-  <NoteList posts={posts} />
+  <NoteBrowser client:load notes={noteSummaries(posts)} siteTitle={SITE_TITLE} />
   <p><a href="/tags">← 모든 화단</a></p>
 </BaseLayout>

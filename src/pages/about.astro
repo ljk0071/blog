@@ -2,9 +2,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PortfolioCard from '../components/PortfolioCard.astro';
 import Principles from '../components/Principles.astro';
-import NoteList from '../components/NoteList.astro';
-import { PROFILE } from '../consts';
-import { getPosts } from '../lib';
+import NoteBrowser from '../components/NoteBrowser';
+import { PROFILE, SITE_TITLE } from '../consts';
+import { getPosts, noteSummaries } from '../lib';
 
 const cases = (await getPosts()).filter((p) => p.data.tags.includes('troubleshooting'));
 const { career } = PROFILE;
@@ -35,7 +35,7 @@ const { career } = PROFILE;
     cases.length > 0 && (
       <>
         <h2>파고들었던 문제들</h2>
-        <NoteList posts={cases} />
+        <NoteBrowser client:load notes={noteSummaries(cases)} siteTitle={SITE_TITLE} />
       </>
     )
   }

@@ -47,5 +47,12 @@ const fullTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
     document.addEventListener('astro:before-swap', (e) => apply(e.newDocument));
   })();
 </script>
+<script is:inline>
+  // 노트 오버레이(React)가 처리할 뒤로/앞으로 가기를 ClientRouter보다 먼저 가로채는 훅.
+  // ClientRouter의 popstate 리스너(모듈 스크립트)보다 먼저 등록돼야 하므로 head 인라인 스크립트로 둔다.
+  addEventListener('popstate', (e) => {
+    if (window.__notePopState && window.__notePopState(e)) e.stopImmediatePropagation();
+  });
+</script>
 <!-- 링크 클릭 시 전체 새로고침 대신 새 페이지 HTML만 받아 View Transition으로 교체 -->
 <ClientRouter />

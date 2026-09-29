@@ -1,11 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import NoteList from '../components/NoteList.astro';
+import NoteBrowser from '../components/NoteBrowser';
 import PortfolioCard from '../components/PortfolioCard.astro';
 import Principles from '../components/Principles.astro';
 import GardenGraph from '../components/GardenGraph';
 import { SITE_TITLE, PROFILE } from '../consts';
-import { buildGraph, getPosts } from '../lib';
+import { buildGraph, getPosts, noteSummaries } from '../lib';
 
 const posts = await getPosts();
 const graph = buildGraph(posts);
@@ -50,7 +50,7 @@ const graph = buildGraph(posts);
       <h2>최근에 심은 노트</h2>
       <a href="/blog">전체 보기 →</a>
     </div>
-    <NoteList posts={posts.slice(0, 6)} />
+    <NoteBrowser client:load notes={noteSummaries(posts.slice(0, 6))} siteTitle={SITE_TITLE} />
   </section>
 </BaseLayout>
 

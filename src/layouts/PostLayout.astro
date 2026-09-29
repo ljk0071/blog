@@ -1,9 +1,8 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import NoteList from '../components/NoteList.astro';
-import LinkPreview from '../components/LinkPreview';
 import { STAGES } from '../consts';
-import { backlinks, formatDate, getPosts, noteTransition, previewIndex, readingTime, type Post } from '../lib';
+import { backlinks, formatDate, getPosts, noteTransition, readingTime, type Post } from '../lib';
 
 interface Props {
   post: Post;
@@ -27,12 +26,12 @@ const related = posts
         <span class="hand">{STAGES[stage].hint}</span>
       </p>
       <h1 style={`view-transition-name: ${vt.title}; view-transition-class: note-part`}>{title}</h1>
-      <p class="meta">
+      <p class="post-meta">
         <span>심은 날 <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time></span>
         {updatedDate && <span>마지막으로 돌본 날 <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time></span>}
         <span>{readingTime(post.body)}분</span>
       </p>
-      <p class="tags">{tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t}</a>)}</p>
+      <p class="post-tags">{tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>#{t}</a>)}</p>
     </header>
     <div class="prose">
       <slot />
@@ -62,18 +61,5 @@ const related = posts
     )
   }
 
-  <LinkPreview client:idle items={previewIndex(posts)} />
 </BaseLayout>
 
-<style>
-  /* 목록의 노트 카드가 그대로 커져서 이 헤더가 된다 */
-  .post-header { margin-bottom: 2.5rem; padding: 1.5rem 1.75rem 1.4rem; }
-  .post-header h1 { margin: 0.5rem 0 0.75rem; }
-  .stage-line { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin: 0; }
-  .stage-pill { font-size: 0.85rem; padding: 0.15rem 0.75rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-  .stage-line .hand { font-size: 1.25rem; }
-  .meta { display: flex; gap: 0.25rem 1.25rem; flex-wrap: wrap; color: var(--muted); font-size: 0.9rem; margin: 0; }
-  .tags { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 0.25rem 0 0; }
-  .prose :global(h2) { margin-top: 2.75rem; }
-  .prose :global(a[href^='/blog/'])::after { content: ' 🌱'; font-size: 0.75em; }
-</style>
