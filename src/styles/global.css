@@ -205,12 +205,13 @@ main { view-transition-name: main; }
 
 /* ---------- 글 오버레이 (목록에서 카드를 누르면 열림) ---------- */
 .ov-root { position: fixed; inset: 0; z-index: 45; }
-.ov-backdrop, .ov-backdrop-fill { position: absolute; inset: 0; }
-.ov-backdrop-fill { background: var(--bg); }
+.ov-backdrop { position: absolute; inset: 0; background: var(--bg); }
 .ov-scroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; }
-.ov-page { position: relative; min-height: 100%; }
-.ov-page-bg { position: absolute; inset: 0; background: var(--bg); box-shadow: var(--shadow); }
+/* 패널은 투명: 페이지 색은 backdrop이, 종이는 ov-sheet가 맡는다. FLIP 계산을 위해 원점은 왼쪽 위 */
+.ov-page { position: relative; min-height: 100%; transform-origin: 0 0; touch-action: pan-y; }
 .ov-inner { position: relative; max-width: var(--max); margin: 0 auto; padding: 1rem 1rem 4rem; }
+.ov-sheet { position: absolute; inset: 0; z-index: -1; background: var(--bg); border-radius: 24px; }
+.ov-page.dragging .ov-sheet { box-shadow: 0 10px 40px rgb(0 0 0 / 0.18); }
 .ov-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
 .ov-bar .hand { font-size: 1.15rem; color: var(--muted); }
 @media (hover: hover) and (pointer: fine) { .ov-bar .hand { display: none; } }

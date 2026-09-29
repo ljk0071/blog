@@ -52,12 +52,16 @@ Google Search Console은 DNS TXT 대신 URL 접두어 속성의 HTML 태그 인�
 
 ## 노트 오버레이
 
-목록(홈·/blog·태그·소개)에서 노트 카드를 누르면 페이지를 이동하지 않고 같은 React 트리 안에서 글을 연다.
+목록(홈·/blog·태그·소개)에서 노트 카드를 누르면 페이지를 이동하지 않고 글을 목록 위에 연다.
 
-- 카드 ↔ 글 헤더는 Motion `layoutId`로 실제 요소가 spring으로 이어진다(스냅샷 아님).
+- **120Hz 애니메이션:** iOS Safari는 JS(requestAnimationFrame) 애니메이션을 60Hz로 제한하므로,
+  Web Animations API로 `transform`·`opacity`만 움직여 컴포지터에서 그린다(`flip.ts`).
+  spring 곡선은 물리 시뮬레이션 결과를 CSS `linear()` 이징으로 구워서 쓴다.
+- **FLIP:** 글 페이지 전체(헤더 + 본문)를 하나의 레이어로 두고, 헤더 카드가 목록 카드와 겹치도록
+  축소·이동한 상태에서 원래 자리로 되돌린다. 본문이 처음부터 헤더에 붙어 함께 커져 빈 화면이 없다.
+- **되감기:** 여는 도중 닫으면 진행 중인 애니메이션을 그 자리에서 `reverse()`한다.
+  글을 오른쪽으로 끌면 손가락을 따라 작아지고, 놓으면 그 위치에서 카드 자리로 줄어든다.
 - 본문은 정적 글 페이지(`/blog/<id>`) HTML을 미리 받아 `.prose` 부분만 꺼내 쓴다(`noteContent.ts`).
 - URL은 `history.pushState`로 `/blog/<id>`가 된다. 주소로 직접 들어오면 정적 글 페이지가 열리므로 SEO는 그대로.
-- 글을 오른쪽으로 끌면 카드처럼 작아지며 뒤 목록이 드러나고(되감기), 놓으면 닫히거나 제자리로 돌아간다.
 - 뒤로/앞으로 가기는 `BaseHead`의 popstate 훅(`window.__notePopState`)이 ClientRouter보다 먼저 받아 처리한다.
   브라우저가 자체 스와이프 애니메이션을 보여 준 경우(`hasUAVisualTransition`)엔 우리 애니메이션을 생략한다.
-- Motion 기능(`domMax`)은 `LazyMotion`으로 첫 화면 이후 별도 청크로 불러온다.
