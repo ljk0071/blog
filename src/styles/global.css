@@ -9,6 +9,7 @@
   --accent-soft: #e4efe3;
   --highlight: #ffe98a; /* 형광펜 */
   --pen: #c2553a; /* 빨간 펜 메모 */
+  --danger: #b4452f;
   --shadow: 0 1px 2px rgb(60 50 30 / 0.06), 0 4px 16px rgb(60 50 30 / 0.06);
   --paper-opacity: 0.35;
   --max: 720px;
@@ -30,6 +31,7 @@
   --accent-soft: #2a3a2d;
   --highlight: rgb(255 214 102 / 0.28);
   --pen: #f08a6c;
+  --danger: #f08a6c;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
   --paper-opacity: 0.12;
   color-scheme: dark;
@@ -41,8 +43,6 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   background: var(--bg);
   color: var(--fg);
   font-family: var(--sans);
@@ -51,6 +51,8 @@ body {
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
+/* 앱 전체를 감싸는 컨테이너: 푸터를 아래로 밀기 위해 flex column */
+#app { min-height: 100vh; display: flex; flex-direction: column; }
 /* 종이 질감 */
 body::before {
   content: '';
@@ -67,9 +69,9 @@ a {
   color: var(--accent);
   text-decoration: none;
   background: linear-gradient(transparent 62%, var(--accent-soft) 62%);
-  transition: background-size 0.2s;
 }
 a:hover { background: linear-gradient(transparent 55%, var(--highlight) 55%); color: var(--fg); }
+a[data-pending] { opacity: 0.7; }
 
 main { flex: 1; width: 100%; max-width: var(--max); margin: 0 auto; padding: 2.5rem 1rem 4rem; }
 main.wide { max-width: var(--wide); }
@@ -96,11 +98,12 @@ button {
   cursor: pointer;
 }
 button:hover { border-color: var(--accent); color: var(--accent); }
+button:disabled { opacity: 0.55; cursor: default; }
 :focus-visible { outline: 2px dashed var(--accent); outline-offset: 3px; }
 
-/* Shiki dual theme */
-:root[data-theme='dark'] .astro-code,
-:root[data-theme='dark'] .astro-code span {
+/* Shiki 듀얼 테마: 라이트는 인라인 color, 다크는 --shiki-dark 변수 */
+:root[data-theme='dark'] .shiki,
+:root[data-theme='dark'] .shiki span {
   color: var(--shiki-dark) !important;
   background-color: var(--shiki-dark-bg) !important;
 }
@@ -120,98 +123,9 @@ button:hover { border-color: var(--accent); color: var(--accent); }
 }
 .section-title { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; margin: 3rem 0 1rem; }
 .section-title h2 { margin: 0; }
+.section-title.first { margin-top: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* 노트 카드 목록 */
-.notes { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-.note {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  height: 100%;
-  padding: 1.1rem 1.25rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-/* 카드 배경은 별도 요소: 페이지 전환 때 이 상자만 글 헤더 크기로 커진다 */
-.note-bg {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-}
-.note-header { position: relative; isolation: isolate; }
-.note:hover { transform: translateY(-3px) rotate(-0.4deg); }
-.note .title { font-family: var(--serif); font-weight: 700; font-size: 1.1rem; line-height: 1.45; color: var(--fg); background: none; }
-.note .title::after { content: ''; position: absolute; inset: 0; }
-.note { position: relative; isolation: isolate; }
-.note .desc { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.65; flex: 1; }
-.note .meta { display: flex; gap: 0.5rem 0.9rem; flex-wrap: wrap; align-items: center; font-size: 0.82rem; color: var(--muted); }
-.note .meta a { position: relative; z-index: 1; }
-
-/* ---------- 글 헤더·본문 (글 페이지와 오버레이가 함께 사용) ---------- */
-.post-header { margin-bottom: 2.5rem; padding: 1.5rem 1.75rem 1.4rem; }
-.post-header h1 { margin: 0.5rem 0 0.75rem; }
-.stage-line { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin: 0; }
-.stage-pill { display: inline-block; font-size: 0.85rem; padding: 0.15rem 0.75rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.stage-line .hand { font-size: 1.25rem; }
-.post-meta { display: flex; gap: 0.25rem 1.25rem; flex-wrap: wrap; color: var(--muted); font-size: 0.9rem; margin: 0; }
-.post-tags { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 0.25rem 0 0; }
-.prose h2 { margin-top: 2.75rem; }
-.prose a[href^='/blog/']::after { content: ' 🌱'; font-size: 0.75em; }
-
-/* ---------- Page transition (ClientRouter가 View Transitions API로 실행) ---------- */
-main { view-transition-name: main; }
-::view-transition-group(site-header) { animation: none; }
-/* 본문: 이전 화면은 빠르게 사라지고, 새 본문은 카드가 거의 펼쳐진 뒤에 나타난다 */
-::view-transition-old(main) { animation: vt-fade-out 120ms ease-out both; }
-::view-transition-new(main) { animation: vt-fade-in 260ms ease-out 180ms both; }
-
-/* 노트 카드 → 글 헤더: 상자·단계·제목이 각자 제자리로 커지며 이동 (ease-out-quint) */
-::view-transition-group(*.note-card),
-::view-transition-group(*.note-part) {
-  animation-duration: 440ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-/* 배경 상자는 글자가 없어서 늘려도 왜곡이 보이지 않는다 */
-::view-transition-old(*.note-card),
-::view-transition-new(*.note-card) { height: 100%; }
-/* 제목·단계: 이전 글자는 바로 넘겨주고 새 글자가 이어받아 커진다 */
-::view-transition-old(*.note-part) { animation: vt-fade-out 110ms ease-out both; }
-::view-transition-new(*.note-part) { animation: vt-fade-in 170ms ease-out both; }
-/* 짝이 없는 카드(클릭하지 않은 카드, 새 페이지에만 있는 카드)는 본문과 같은 타이밍으로 */
-::view-transition-old(*.note-card):only-child,
-::view-transition-old(*.note-part):only-child { animation: vt-fade-out 120ms ease-out both; }
-::view-transition-new(*.note-card):only-child,
-::view-transition-new(*.note-part):only-child { animation: vt-fade-in 260ms ease-out 180ms both; }
-
-@keyframes vt-fade-out { to { opacity: 0; } }
-@keyframes vt-fade-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) { animation: none !important; }
-  .note, .note:hover { transition: none; transform: none; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
-
-/* 노트 검색 (/blog) */
-.search-bar { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
-.search-bar input { width: 100%; font: inherit; padding: 0.7rem 1.1rem; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); box-shadow: var(--shadow); }
-.search-bar input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
-.filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.filters button { font-size: 0.85rem; }
-.filters button[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: var(--card); }
-
-/* ---------- 글 오버레이 (목록에서 카드를 누르면 열림) ---------- */
-.ov-root { position: fixed; inset: 0; z-index: 45; }
-.ov-backdrop { position: absolute; inset: 0; background: var(--bg); }
-.ov-scroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; }
-/* 패널은 투명: 페이지 색은 backdrop이, 종이는 ov-sheet가 맡는다. FLIP 계산을 위해 원점은 왼쪽 위 */
-.ov-page { position: relative; min-height: 100%; transform-origin: 0 0; touch-action: pan-y; }
-.ov-inner { position: relative; max-width: var(--max); margin: 0 auto; padding: 1rem 1rem 4rem; }
-.ov-sheet { position: absolute; inset: 0; z-index: -1; background: var(--bg); border-radius: 24px; }
-.ov-page.dragging .ov-sheet { box-shadow: 0 10px 40px rgb(0 0 0 / 0.18); }
-.ov-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
-.ov-bar .hand { font-size: 1.15rem; color: var(--muted); }
-@media (hover: hover) and (pointer: fine) { .ov-bar .hand { display: none; } }

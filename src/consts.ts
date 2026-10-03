@@ -1,3 +1,4 @@
+export const SITE_URL = 'https://ssobbs13.is-a.dev';
 export const SITE_TITLE = 'ssobbs13의 정원';
 export const SITE_DESCRIPTION = '문제가 어떻게 발생했고 어떻게 해결했는지를 파고드는 백엔드 개발자 ssobbs13의 디지털 정원';
 

@@ -1,40 +1,43 @@
-import { useEffect, useMemo, useState } from 'react';
-import { STAGES } from '../consts';
-import type { PreviewItem } from '../lib';
+import { Show, createSignal, onSettled } from "solid-js";
+import { STAGES } from "~/consts";
+import { formatDate, noteById, type NoteMeta } from "~/lib/notes";
 
-type State = { item: PreviewItem; x: number; y: number; below: boolean } | null;
+interface State {
+  note: NoteMeta;
+  x: number;
+  y: number;
+  below: boolean;
+}
 
 const CARD_W = 320;
 
 /**
  * 본문 속 다른 노트로 가는 링크(/blog/...)에 마우스를 올리거나 포커스하면 미리보기 카드를 띄운다.
- * 링크마다 컴포넌트를 두지 않고 document 이벤트 위임 하나로 처리한다.
- * data-no-preview 영역(카드 목록·그래프처럼 이미 요약이 보이는 곳)과 터치 입력은 제외.
+ * 링크마다 컴포넌트를 두지 않고 document 이벤트 위임 하나로 처리한다. 노트 카드 목록과 터치 입력은 제외.
+ * 브라우저 전용이라 clientOnly 로 불러온다(서버는 코드를 실행하지 않는다).
  */
-export default function LinkPreview({ items }: { items: PreviewItem[] }) {
-  const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
-  const [state, setState] = useState<State>(null);
+export default function LinkPreview() {
+  const [state, setState] = createSignal<State | null>(null);
 
-  useEffect(() => {
+  onSettled(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let current: HTMLAnchorElement | null = null;
 
-    const anchorOf = (t: EventTarget | null) =>
-      t instanceof Element ? t.closest<HTMLAnchorElement>('a[href^="/blog/"]') : null;
+    const anchorOf = (t: EventTarget | null) => (t instanceof Element ? t.closest<HTMLAnchorElement>("a[href^='/blog/']") : null);
 
     const show = (a: HTMLAnchorElement) => {
-      if (a.closest('[data-no-preview]')) return;
-      const id = new URL(a.href).pathname.replace(/^\/blog\//, '').replace(/\/$/, '');
-      const item = byId.get(id);
-      if (!item || location.pathname === `/blog/${id}`) return;
+      if (a.closest(".note, .garden-graph, .reader-backdrop")) return;
+      const id = new URL(a.href).pathname.replace(/^\/blog\//, "").replace(/\/$/, "");
+      const note = noteById.get(id);
+      if (!note || location.pathname === `/blog/${id}`) return;
       const r = a.getBoundingClientRect();
       const half = Math.min(CARD_W, innerWidth - 32) / 2;
       const below = r.top < 200;
       setState({
-        item,
+        note,
         x: Math.min(innerWidth - 16 - half, Math.max(16 + half, r.left + r.width / 2)),
         y: below ? r.bottom + 10 : r.top - 10,
-        below,
+        below
       });
     };
     const hide = () => {
@@ -44,7 +47,7 @@ export default function LinkPreview({ items }: { items: PreviewItem[] }) {
     };
 
     const onOver = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
+      if (e.pointerType === "touch") return;
       const a = anchorOf(e.target);
       if (!a || a === current) return;
       current = a;
@@ -60,44 +63,43 @@ export default function LinkPreview({ items }: { items: PreviewItem[] }) {
       if (a) show(a);
     };
 
-    document.addEventListener('pointerover', onOver);
-    document.addEventListener('pointerout', onOut);
-    document.addEventListener('focusin', onFocusIn);
-    document.addEventListener('focusout', hide);
-    addEventListener('scroll', hide, { passive: true });
-    // ClientRouter로 페이지를 옮기기 시작하면 떠 있는 카드를 닫는다
-    document.addEventListener('astro:before-preparation', hide);
+    document.addEventListener("pointerover", onOver);
+    document.addEventListener("pointerout", onOut);
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", hide);
+    addEventListener("scroll", hide, { passive: true });
+    addEventListener("popstate", hide);
     return () => {
-      document.removeEventListener('astro:before-preparation', hide);
       clearTimeout(timer);
-      document.removeEventListener('pointerover', onOver);
-      document.removeEventListener('pointerout', onOut);
-      document.removeEventListener('focusin', onFocusIn);
-      document.removeEventListener('focusout', hide);
-      removeEventListener('scroll', hide);
+      document.removeEventListener("pointerover", onOver);
+      document.removeEventListener("pointerout", onOut);
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", hide);
+      removeEventListener("scroll", hide);
+      removeEventListener("popstate", hide);
     };
-  }, [byId]);
+  });
 
-  if (!state) return null;
-  const { item, x, y, below } = state;
-  const stage = STAGES[item.stage];
   return (
-    <div
-      role="tooltip"
-      className="link-preview card"
-      style={{ left: x, top: y, transform: `translate(-50%, ${below ? '0' : '-100%'})` }}
-    >
-      <span className="stage">
-        {stage.emoji} {stage.label} · {item.date}
-      </span>
-      <strong>{item.title}</strong>
-      <p>{item.description}</p>
-      <style>{`
-        .link-preview { position: fixed; z-index: 50; width: min(${CARD_W}px, calc(100vw - 32px)); padding: 0.9rem 1.1rem; pointer-events: none; display: flex; flex-direction: column; gap: 0.25rem; animation: lp-in .15s ease-out; }
-        .link-preview strong { font-family: var(--serif); font-size: 1.02rem; line-height: 1.45; }
-        .link-preview p { margin: 0; font-size: 0.86rem; line-height: 1.6; color: var(--muted); }
-        @keyframes lp-in { from { opacity: 0; } }
-      `}</style>
-    </div>
+    <Show when={state()}>
+      {(s) => (
+        <div
+          role="tooltip"
+          class="link-preview card"
+          style={{
+            left: `${s().x}px`,
+            top: `${s().y}px`,
+            width: `min(${CARD_W}px, calc(100vw - 32px))`,
+            transform: `translate(-50%, ${s().below ? "0" : "-100%"})`
+          }}
+        >
+          <span class="stage">
+            {STAGES[s().note.stage].emoji} {STAGES[s().note.stage].label} · {formatDate(s().note.pubDate)}
+          </span>
+          <strong>{s().note.title}</strong>
+          <p>{s().note.description}</p>
+        </div>
+      )}
+    </Show>
   );
 }

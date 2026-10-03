@@ -1,33 +1,33 @@
 {
-  "name": "react-tech-blog",
+  "name": "ssobbs13-garden",
   "type": "module",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro check && astro build",
-    "preview": "npm run build && wrangler pages dev",
-    "deploy": "npm run build && wrangler pages deploy",
-    "cf-typegen": "wrangler types"
+    "dev": "vite",
+    "build": "vite build && node scripts/prerender.mjs",
+    "typecheck": "tsc --noEmit",
+    "preview": "wrangler pages dev",
+    "deploy": "npm run build && wrangler pages deploy"
   },
   "dependencies": {
-    "@astrojs/mdx": "^8.0.2",
-    "@astrojs/react": "^7.0.0",
-    "@astrojs/rss": "^4.0.19",
-    "@astrojs/sitemap": "^3.7.4",
-    "@fontsource/gowun-batang": "^5.3.0",
-    "@fontsource/jetbrains-mono": "^5.3.0",
-    "@fontsource/nanum-pen-script": "^5.3.0",
-    "@fontsource/pretendard": "^5.3.0",
-    "astro": "^7.3.5",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "@fontsource/gowun-batang": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/nanum-pen-script": "5.3.0",
+    "@fontsource/pretendard": "5.3.0",
+    "@solidjs/meta": "1.0.0-next.2",
+    "@solidjs/router": "2.0.0-next.35",
+    "@solidjs/web": "2.0.0-rc.13",
+    "solid-js": "2.0.0-rc.13"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "typescript": "^6.0.3",
-    "wrangler": "^4.141.0"
+    "@solidjs/vite-plugin": "3.0.0-next.35",
+    "@types/node": "22.20.5",
+    "gray-matter": "4.0.3",
+    "marked": "18.0.14",
+    "shiki": "4.5.0",
+    "typescript": "6.0.3",
+    "vite": "8.3.2",
+    "wrangler": "4.147.0"
   }
 }
