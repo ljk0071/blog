@@ -22,5 +22,8 @@ Cloudflare Pages: build `npm run build`, output `dist`, Node 22.
 ## 방문 분석 (GA4 + Clarity + PostHog)
 - 식별자는 `src/consts.ts` 의 `ANALYTICS` (공개용 값). 로직은 `src/lib/analytics.ts`, hydrate 후에만 로드.
 - 페이지뷰: 라우트 변경 시 직접 전송. GA4 스트림의 "브라우저 기록 이벤트에 따른 페이지 변경" 향상된 측정은 꺼야 중복되지 않는다.
-- 커스텀 이벤트: `note_open`(card/direct), `search`, `bookmark_toggle`, `note_read_complete`, `theme_toggle`, `graph_node_click`
+- 커스텀 이벤트: `note_open`(card/direct/link), `search`, `bookmark_toggle`, `note_read_complete`, `theme_toggle`, `graph_node_click`
+- 완독(`note_read_complete`): 본문 끝이 화면에 들어왔고, 예상 읽기 시간의 30% 이상 머문 경우. 탭 세션당 노트마다 한 번. 화면의 "✓ 읽음"(스크롤 96%)과는 별개.
+- JS 에러(`$exception`)·Web Vitals 는 PostHog 로 수집. 자동화 브라우저(구글 렌더러·Headless·Lighthouse)에서는 로드하지 않는다.
+- 주간 보고서: `node scripts/report.mjs` → `reports/YYYY-WW.md`. 키는 `.env`(커밋 금지): `GA4_PROPERTY_ID`, `GA4_SA_JSON_PATH`, `POSTHOG_PERSONAL_KEY`, `CLARITY_TOKEN`.
 - 내 방문 제외: `?notrack=1` (해제 `?notrack=0`), 브라우저 DNT 도 존중.

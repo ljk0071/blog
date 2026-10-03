@@ -1,5 +1,4 @@
 import { createContext, createEffect, createStore, deep, onSettled, useContext, type Element } from "solid-js";
-import { track } from "./analytics";
 import { idbGet, idbSet } from "./idb";
 
 export interface ReadState {
@@ -36,8 +35,6 @@ function createProgress() {
   );
 
   const record = (id: string, ratio: number) => {
-    // 처음으로 "다 읽음" 선을 넘는 순간 한 번만 알린다 (읽기 퍼널의 마지막 단계)
-    if (ratio >= DONE_RATIO && (progress[id]?.ratio ?? 0) < DONE_RATIO) track("note_read_complete", { note: id });
     setProgress((d) => {
       d[id] = { ratio: Math.min(1, Math.max(0, ratio)), at: Date.now() };
     });

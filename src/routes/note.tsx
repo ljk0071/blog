@@ -1,6 +1,6 @@
 import { Script } from "@solidjs/meta";
 import { useBeforeLeave, useParams, type RoutePreloadFuncArgs } from "@solidjs/router";
-import { For, Loading, Show, createMemo, isPending, onCleanup, onSettled } from "solid-js";
+import { For, Loading, Show, createEffect, createMemo, isPending, onCleanup, onSettled } from "solid-js";
 import BookmarkButton from "~/components/BookmarkButton";
 import NoteList from "~/components/NoteList";
 import PageHead from "~/components/PageHead";
@@ -12,6 +12,15 @@ import { track } from "~/lib/analytics";
 import { bindSwipeBack, canAnimateExit, dropOrigin, hasOrigin, playEnter, playExit, releaseAfterExit } from "~/lib/reader";
 
 export const preload = ({ params }: RoutePreloadFuncArgs) => void getNoteBody(params.id!);
+
+// 직접 진입(hydrate) 때는 이 페이지가 두 번 마운트돼 onSettled 도 두 번 돈다 → 같은 노트를 연달아 기록하지 않는다.
+let lastOpen = { id: "", at: 0 };
+function trackOpen(id: string, source: "card" | "direct" | "link") {
+  const now = performance.now();
+  if (lastOpen.id === id && now - lastOpen.at < 2000) return;
+  lastOpen = { id, at: now };
+  track("note_open", { note: id, source });
+}
 
 export default function NotePage() {
   const params = useParams<{ id: string }>();
@@ -25,7 +34,10 @@ export default function NotePage() {
   //  · 노트 → 노트 이동: 이미 한 번 보인 자리라 이전 글이 그대로 남고(isPending 으로 흐리게), 새 글이 도착하면 한 번에 바뀐다.
   const body = createMemo(() => getNoteBody(params.id), { deferStream: true });
 
-  const { ratio, current } = createReadingTracker(() => note().id);
+  const { ratio, current } = createReadingTracker(
+    () => note().id,
+    () => note().minutes
+  );
 
   let panel!: HTMLDivElement;
   let header!: HTMLElement;
@@ -34,7 +46,7 @@ export default function NotePage() {
 
   onSettled(() => {
     // 어디서 들어왔는지(카드 클릭 / 주소·링크 직접) — playEnter 가 출발점을 소비하기 전에 기록한다
-    track("note_open", { note: note().id, source: hasOrigin(note().id) ? "card" : "direct" });
+    trackOpen(note().id, hasOrigin(note().id) ? "card" : "direct");
     // 카드에서 열렸다면 카드 → 글 FLIP 으로 펼친다
     playEnter(note().id, { panel, header });
     // 오른쪽으로 끌어 닫기 (카드에서 열었을 때만 뒤에 목록이 있다)
@@ -49,6 +61,14 @@ export default function NotePage() {
     });
     return unbind;
   });
+
+  // 노트 → 노트 이동은 이 컴포넌트가 재사용돼 onSettled 가 다시 돌지 않는다 → id 가 바뀔 때 따로 기록한다.
+  // source: 아래쪽 목록 카드면 "card", 본문·백링크 링크면 "link"
+  createEffect(
+    () => note().id,
+    (id) => trackOpen(id, hasOrigin(id) ? "card" : "link"),
+    { defer: true }
+  );
 
   // 뒤로 가기를 가로채 패널이 카드로 줄어든 뒤 이동을 이어 간다 (iOS 스와이프처럼 브라우저가 이미 애니메이션했으면 건너뜀)
   useBeforeLeave((e) => {

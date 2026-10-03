@@ -30,6 +30,9 @@ function optedOut(): boolean {
   return navigator.doNotTrack === "1";
 }
 
+// 봇 UA 목록에 없어 각 도구의 필터를 통과하는 자동화 브라우저. 'Nexus 5X Build/MMB29P' 는 구글 렌더러의 고정 프로필이다.
+const isAutomated = () => navigator.webdriver || /Nexus 5X Build\/MMB29P|HeadlessChrome|Lighthouse/.test(navigator.userAgent);
+
 function loadScript(src: string) {
   const s = document.createElement("script");
   s.async = true;
@@ -38,7 +41,7 @@ function loadScript(src: string) {
 }
 
 export function initAnalytics() {
-  if (started || typeof window === "undefined" || optedOut()) return;
+  if (started || typeof window === "undefined" || optedOut() || isAutomated()) return;
   started = true;
 
   if (ANALYTICS.ga4) {
@@ -69,6 +72,9 @@ export function initAnalytics() {
         api_host: ANALYTICS.posthogHost,
         capture_pageview: false, // 라우트 변경 때 직접 보낸다
         capture_pageleave: true,
+        // 프로젝트 원격 설정에 기대지 않고 코드에서 켠다: 잡히지 않은 에러·거부된 Promise, LCP/INP/CLS
+        capture_exceptions: true,
+        capture_performance: { web_vitals: true },
         person_profiles: "identified_only"
       });
       ph = posthog;
