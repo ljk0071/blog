@@ -1,3 +1,4 @@
+import { track } from "~/lib/analytics";
 import { usePreloadRoute, useNavigate } from "@solidjs/router";
 import { For, createMemo, createSignal, createStore, onSettled } from "solid-js";
 import { notes } from "~/lib/notes";
@@ -141,7 +142,10 @@ export default function GardenGraph() {
               onFocus={() => setHover(i())}
               onBlur={() => setHover(null)}
               onClick={() => {
-                if (!drag?.moved) navigate(n.href);
+                if (!drag?.moved) {
+                  track("graph_node_click", { note: n.href });
+                  navigate(n.href);
+                }
               }}
               onKeyDown={(e: KeyboardEvent) => {
                 if (e.key === "Enter" || e.key === " ") {

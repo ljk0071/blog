@@ -8,6 +8,7 @@ import { ReadingBar, ResumeButton, Toc, createReadingTracker } from "~/component
 import { ArticleSkeleton } from "~/components/Skeletons";
 import { SITE_TITLE, SITE_URL, STAGES } from "~/consts";
 import { backlinksOf, formatDate, getNoteBody, noteById, relatedOf } from "~/lib/notes";
+import { track } from "~/lib/analytics";
 import { bindSwipeBack, canAnimateExit, dropOrigin, hasOrigin, playEnter, playExit, releaseAfterExit } from "~/lib/reader";
 
 export const preload = ({ params }: RoutePreloadFuncArgs) => void getNoteBody(params.id!);
@@ -32,6 +33,8 @@ export default function NotePage() {
   let dragGeometry: Parameters<typeof playExit>[2];
 
   onSettled(() => {
+    // 어디서 들어왔는지(카드 클릭 / 주소·링크 직접) — playEnter 가 출발점을 소비하기 전에 기록한다
+    track("note_open", { note: note().id, source: hasOrigin(note().id) ? "card" : "direct" });
     // 카드에서 열렸다면 카드 → 글 FLIP 으로 펼친다
     playEnter(note().id, { panel, header });
     // 오른쪽으로 끌어 닫기 (카드에서 열었을 때만 뒤에 목록이 있다)

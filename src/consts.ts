@@ -39,3 +39,11 @@ export const STAGES = {
   evergreen: { emoji: '🌳', label: '상록수', hint: '충분히 다듬어진 글이에요.' },
 } as const;
 export type Stage = keyof typeof STAGES;
+
+// 방문 분석 (모두 공개용 식별자라 코드에 있어도 안전하다). 비어 있으면 해당 도구는 로드하지 않는다.
+export const ANALYTICS = {
+  ga4: 'G-SP6TNXKGLF',
+  posthogKey: 'phc_xSPyVWzebkBiWCgY9tf5f4uHyjEMQLA6ZUtVUChpJnjb',
+  posthogHost: 'https://us.i.posthog.com',
+  clarity: 'ys0qxwdtcm',
+};

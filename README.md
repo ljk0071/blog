@@ -18,3 +18,9 @@
 
 ## 배포
 Cloudflare Pages: build `npm run build`, output `dist`, Node 22.
+
+## 방문 분석 (GA4 + Clarity + PostHog)
+- 식별자는 `src/consts.ts` 의 `ANALYTICS` (공개용 값). 로직은 `src/lib/analytics.ts`, hydrate 후에만 로드.
+- 페이지뷰: 라우트 변경 시 직접 전송. GA4 스트림의 "브라우저 기록 이벤트에 따른 페이지 변경" 향상된 측정은 꺼야 중복되지 않는다.
+- 커스텀 이벤트: `note_open`(card/direct), `search`, `bookmark_toggle`, `note_read_complete`, `theme_toggle`, `graph_node_click`
+- 내 방문 제외: `?notrack=1` (해제 `?notrack=0`), 브라우저 DNT 도 존중.

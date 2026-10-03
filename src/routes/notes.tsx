@@ -4,6 +4,7 @@ import NoteList from "~/components/NoteList";
 import PageHead from "~/components/PageHead";
 import { NotesSkeleton } from "~/components/Skeletons";
 import { STAGES } from "~/consts";
+import { track } from "~/lib/analytics";
 import { notes } from "~/lib/notes";
 import { STAGE_FILTERS, byStage, loadSearchIndex, parseStage, runSearch, type Hit, type StageFilter } from "~/lib/search";
 
@@ -19,7 +20,10 @@ export default function Notes() {
   createEffect(
     () => ({ q: query().trim(), stage: stage() }),
     ({ q, stage }) => {
-      const t = setTimeout(() => setParams({ q: q || undefined, stage: stage === "all" ? undefined : stage }, { replace: true }), 300);
+      const t = setTimeout(() => {
+        if (q) track("search", { query: q, stage });
+        setParams({ q: q || undefined, stage: stage === "all" ? undefined : stage }, { replace: true });
+      }, 300);
       return () => clearTimeout(t);
     },
     { defer: true }

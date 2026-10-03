@@ -9,6 +9,7 @@ import {
   useContext,
   type Element
 } from "solid-js";
+import { track } from "./analytics";
 import { idbGet, idbSet } from "./idb";
 
 export interface Saved {
@@ -49,6 +50,7 @@ function createBookmarks() {
   const toggle = action(function* (id: string) {
     const wasSaved = saved.some((s) => s.id === id);
     setSaving(true);
+    track("bookmark_toggle", { note: id, saved: !wasSaved });
     // 1) 낙관적 쓰기: 저장이 끝나기 전에 화면에는 이미 반영된다
     setSaved((list) => {
       if (wasSaved) {

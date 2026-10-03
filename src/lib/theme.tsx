@@ -1,3 +1,4 @@
+import { track } from "./analytics";
 import { createContext, createSignal, onSettled, useContext, type Accessor, type Element } from "solid-js";
 
 export type Theme = "light" | "dark";
@@ -27,6 +28,7 @@ export function ThemeProvider(props: { children?: Element }) {
       // 저장소를 못 쓰는 환경이면 이번 방문에만 적용
     }
     setTheme(next);
+    track("theme_toggle", { theme: next });
   };
 
   return <ThemeContext value={{ theme, toggle }}>{props.children}</ThemeContext>;
