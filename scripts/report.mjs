@@ -99,6 +99,17 @@ async function ga4(dimensions, metrics, range, extra = {}) {
   const j = await r.json();
   return (j.rows ?? []).map((row) => [...row.dimensionValues.map((v) => v.value), ...row.metricValues.map((v) => Number(v.value))]);
 }
+// 표준 보고서는 처리에 24~48시간이 걸린다. 그 사이 계측이 살아 있는지는 실시간 API(최근 30분)로 본다.
+async function ga4Realtime() {
+  gaTok ??= await ga4Token();
+  const r = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${process.env.GA4_PROPERTY_ID}:runRealtimeReport`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${gaTok}`, "content-type": "application/json" },
+    body: JSON.stringify({ dimensions: [{ name: "eventName" }], metrics: [{ name: "eventCount" }] })
+  });
+  if (!r.ok) throw new Error(`GA4 realtime ${r.status} ${(await r.text()).slice(0, 200)}`);
+  return ((await r.json()).rows ?? []).map((row) => `${row.dimensionValues[0].value} ${row.metricValues[0].value}`);
+}
 const ga4Total = async (metric, range) => (await ga4([], [metric], range))[0]?.[0] ?? 0;
 
 // ───────── PostHog (HogQL) ─────────
@@ -216,6 +227,16 @@ const phErrors = phRun
   : null;
 const clInsights = have.cl ? await safe("Clarity 인사이트", () => clarity("URL")) : null;
 
+// GA4 표준 보고서가 통째로 비어 있는데 PostHog 에는 방문이 있으면 "방문 0"이 아니라 처리 지연이다
+const gaLagging = have.ga4 && gaEvents && gaEvents.length === 0 && (phViews ?? 0) > 0;
+const gaRealtime = gaLagging ? await safe("GA4 실시간", ga4Realtime) : null;
+const notes = [];
+if (gaLagging)
+  notes.push(
+    `GA4 표준 보고서에 이 기간 데이터가 아직 없습니다. PostHog 에는 페이지뷰 ${phViews}건이 있으므로 GA4 의 처리 지연(보통 24~48시간)입니다. 아래 GA4 값 0 은 "방문 없음"이 아닙니다. ` +
+      `GA4 실시간(최근 30분): ${gaRealtime?.length ? gaRealtime.join(", ") : "이벤트 없음"}`
+  );
+
 // ───────── 가공 ─────────
 const evMap = (rows) => Object.fromEntries((rows ?? []).map((r) => [r[0], r]));
 const ev = evMap(phEvents);
@@ -290,7 +311,7 @@ const L = [];
 const sec = (title, ...body) => L.push(`\n## ${title}\n`, ...body);
 
 const summary = [];
-if (wau != null) summary.push(`WAU ${num(wau)} (지난주 대비 ${delta(wau, wauPrev)}, GA4)`);
+if (wau && !gaLagging) summary.push(`WAU ${num(wau)} (지난주 대비 ${delta(wau, wauPrev)}, GA4)`);
 else if (phWau != null) summary.push(`WAU ${num(phWau)} (지난주 대비 ${delta(phWau, phWauPrev)}, PostHog)`);
 if (ns?.notes.length) {
   const o = ns.notes.reduce((s, n) => s + n.opens, 0);
@@ -299,6 +320,7 @@ if (ns?.notes.length) {
 }
 L.push(`# 주간 방문 보고서 ${label}`, "", `- 이번 주 ${range(W.cur)} / 지난주 ${range(W.prev)} (${TZ})`, `- **이번 주 한 줄 요약:** ${summary.length ? summary.join(" · ") : "수집된 지표 없음 — 아래 '수집 실패' 확인"}`);
 
+if (notes.length) sec("참고", notes.map((n) => `- ${n}`).join("\n"));
 if (failures.length) sec("⚠️ 수집 실패 / 건너뜀", failures.map((f) => `- ${f}`).join("\n"));
 
 sec(
@@ -307,10 +329,10 @@ sec(
     ["이벤트", "PostHog 건수", "PostHog 사용자", "GA4 건수", "상태"],
     ["$pageview", "note_open", "search", "bookmark_toggle", "note_read_complete", "theme_toggle", "graph_node_click", "$pageleave", "$web_vitals", "$exception"].map((e) => {
       const gaName = e === "$pageview" ? "page_view" : e;
-      const ga = (gaEvents ?? []).find((r) => r[0] === gaName)?.[1];
+      const ga = gaLagging ? null : (gaEvents ?? []).find((r) => r[0] === gaName)?.[1];
       const p = ev[e];
       const status = !phRun ? "PostHog 키 없음" : p ? "✅" : "❌ 0건 (미발화 또는 미수집)";
-      return [e, num(p?.[1] ?? 0), num(p?.[2] ?? 0), e.startsWith("$") && e !== "$pageview" ? "n/a" : gaEvents ? num(ga ?? 0) : "–", status];
+      return [e, num(p?.[1] ?? 0), num(p?.[2] ?? 0), e.startsWith("$") && e !== "$pageview" ? "n/a" : gaLagging ? "지연" : gaEvents ? num(ga ?? 0) : "–", status];
     })
   ),
   "",
