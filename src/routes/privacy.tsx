@@ -1,17 +1,17 @@
 import { Show, createSignal, onSettled } from "solid-js";
 import PageHead from "~/components/PageHead";
-import { optedOut, setTrackingAllowed } from "~/lib/analytics";
+import { consent, setConsent } from "~/lib/analytics";
 
 export default function Privacy() {
-  // 서버·첫 렌더에서는 알 수 없다 → hydrate 후에 이 브라우저의 설정을 읽는다
-  const [off, setOff] = createSignal<boolean | null>(null);
+  // 서버·첫 렌더에서는 알 수 없다 → hydrate 후에 이 브라우저의 선택을 읽는다
+  const [on, setOn] = createSignal<boolean | null>(null);
   onSettled(() => {
-    setOff(optedOut());
+    setOn(consent() === "granted");
   });
   const toggle = () => {
-    const next = !off();
-    setOff(next);
-    setTrackingAllowed(!next);
+    const next = !on();
+    setOn(next);
+    setConsent(next);
   };
 
   return (
@@ -20,25 +20,23 @@ export default function Privacy() {
       <p class="hand">정원에 남는 발자국</p>
       <h1>방문 분석 안내</h1>
       <p>
-        어떤 글이 읽히는지, 어디서 막히는지 알고 싶어서 방문 분석 도구 세 가지를 쓰고 있어요. 이름·이메일 같은 정보는 받지 않고, 광고에도 쓰지 않습니다. 원하지 않으면 아래 스위치로 끌 수 있어요.
+        어떤 글이 읽히는지, 어디서 막히는지 알고 싶어서 방문 분석 도구 세 가지를 쓰고 있어요. 허용한 브라우저에서만 수집하고, 이름·이메일 같은 정보는 받지 않으며, 광고에도 쓰지 않습니다. 아래 스위치로 언제든 바꿀 수 있어요.
       </p>
 
       <div class="privacy-switch card">
         <div>
           <strong>이 브라우저의 방문 분석</strong>
           <p class="muted small" aria-live="polite">
-            <Show when={off() !== null} fallback="설정을 확인하는 중…">
-              {off() ? "꺼져 있어요. 이 브라우저의 방문은 기록되지 않습니다." : "켜져 있어요."}
+            <Show when={on() !== null} fallback="설정을 확인하는 중…">
+              {on() ? "켜져 있어요." : "꺼져 있어요. 이 브라우저의 방문은 기록되지 않습니다."}
             </Show>
           </p>
         </div>
-        <button type="button" onClick={toggle} disabled={off() === null}>
-          {off() ? "다시 켜기" : "끄기"}
+        <button type="button" onClick={toggle} disabled={on() === null}>
+          {on() ? "끄기" : "허용하기"}
         </button>
       </div>
-      <p class="muted small">
-        이 설정은 이 브라우저에만 저장돼요. 다른 기기나 브라우저에서는 따로 꺼야 합니다. 브라우저의 "추적 안 함(Do Not Track)" 설정이 켜져 있으면 처음부터 수집하지 않아요.
-      </p>
+      <p class="muted small">이 선택은 이 브라우저에만 저장돼요. 다른 기기나 브라우저에서는 따로 고르게 됩니다.</p>
 
       <h2>무엇을 수집하나요</h2>
       <table>

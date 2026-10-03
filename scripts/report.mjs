@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 주간 방문 분석 보고서. `node scripts/report.mjs [--end YYYY-MM-DD] [--dry]`
- *  - 기간: end(기본 어제)까지 7일 = 이번 주, 그 앞 7일 = 지난주. 날짜는 UTC 기준.
+ *  - 기간: end(기본 어제)까지 7일 = 이번 주, 그 앞 7일 = 지난주. 날짜는 REPORT_TZ(기본 Asia/Seoul) 기준.
  *  - 출력: reports/YYYY-WW.md (ISO 주차). --dry 면 파일 대신 stdout.
  *  - 키(.env, 커밋 금지): GA4_PROPERTY_ID, GA4_SA_JSON_PATH, POSTHOG_PERSONAL_KEY, CLARITY_TOKEN
  *    선택: POSTHOG_HOST(기본 https://us.posthog.com), EXCLUDE_DISTINCT_IDS(내 브라우저 id, 쉼표 구분)
@@ -26,7 +26,9 @@ const opt = (n) => (args.includes(`--${n}`) ? args[args.indexOf(`--${n}`) + 1] :
 // ───────── 기간 ─────────
 const DAY = 86400000;
 const ymd = (d) => d.toISOString().slice(0, 10);
-const today = new Date(ymd(new Date()) + "T00:00:00Z");
+// 날짜 경계는 PostHog 프로젝트·GA4 속성의 시간대와 맞춘다 (둘 다 그 시간대의 달력 날짜로 조회한다)
+const TZ = process.env.REPORT_TZ || "Asia/Seoul";
+const today = new Date(new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date()) + "T00:00:00Z");
 const endDay = opt("end") ? new Date(opt("end") + "T00:00:00Z") : new Date(+today - DAY);
 const W = {
   cur: { from: new Date(+endDay - 6 * DAY), to: endDay },
@@ -295,7 +297,7 @@ if (ns?.notes.length) {
   const d = ns.notes.reduce((s, n) => s + n.done, 0);
   summary.push(`노트 완독률 ${pct(d, o)}${small(o)}`);
 }
-L.push(`# 주간 방문 보고서 ${label}`, "", `- 이번 주 ${range(W.cur)} / 지난주 ${range(W.prev)} (UTC)`, `- **이번 주 한 줄 요약:** ${summary.length ? summary.join(" · ") : "수집된 지표 없음 — 아래 '수집 실패' 확인"}`);
+L.push(`# 주간 방문 보고서 ${label}`, "", `- 이번 주 ${range(W.cur)} / 지난주 ${range(W.prev)} (${TZ})`, `- **이번 주 한 줄 요약:** ${summary.length ? summary.join(" · ") : "수집된 지표 없음 — 아래 '수집 실패' 확인"}`);
 
 if (failures.length) sec("⚠️ 수집 실패 / 건너뜀", failures.map((f) => `- ${f}`).join("\n"));
 
@@ -420,7 +422,6 @@ sec(
 
 const clMetric = (name) => clInsights?.find((m) => m.metricName === name)?.information ?? [];
 const clSum = (name, key) => clMetric(name).reduce((s, r) => s + Number(r[key] ?? 0), 0);
-const clPct = (name) => clMetric(name)[0]?.sessionsWithMetricPercentage;
 sec(
   "5. 품질",
   "**Web Vitals p75 (PostHog `$web_vitals`)**",
@@ -431,16 +432,20 @@ sec(
       )
     : !phRun
       ? "_PostHog 키 없음_"
-      : "❌ 수집된 값 없음. 현재 코드(src/lib/analytics.ts)에 `capture_performance` 설정이 없고, PostHog 프로젝트 설정의 Web vitals 도 꺼져 있을 가능성이 큽니다. 1단계 수정안 참고.",
+      : "0건. 이번 주에 Web Vitals 이벤트가 없습니다(방문 자체가 없었거나, Safari 처럼 일부 지표를 보고하지 않는 브라우저뿐이었을 수 있음).",
   "",
   "**JS 에러 (PostHog `$exception`)**",
-  phErrors?.length ? table(["종류", "메시지", "건수"], phErrors.map((r) => [esc(r[0]), esc(r[1]).slice(0, 80), r[2]])) : !phRun ? "_PostHog 키 없음_" : "❌/0건 — 현재 코드에 `capture_exceptions` 설정이 없어 '에러 없음'이 아니라 '수집 안 함'일 수 있습니다.",
+  phErrors?.length ? table(["종류", "메시지", "건수"], phErrors.map((r) => [esc(r[0]), esc(r[1]).slice(0, 80), r[2]])) : !phRun ? "_PostHog 키 없음_" : "0건 (2026-10-04 배포부터 수집. 그 전 기간의 0건은 '에러 없음'이 아니라 '수집 안 함')",
   "",
   `**Clarity (최근 3일만 조회 가능 — API 제한. 이번 주 7일 전체가 아님)**`,
   clInsights
     ? table(
-        ["지표", "세션 비율", "건수"],
-        [["Dead click", "DeadClickCount"], ["Rage click", "RageClickCount"], ["Quick back", "QuickbackClick"], ["Script error", "ScriptErrorCount"]].map(([n, k]) => [n, clPct(k) != null ? `${clPct(k)}%` : "–", num(clSum(k, "subTotal"))])
+        ["지표", "건수", "발생한 페이지"],
+        [["Dead click", "DeadClickCount"], ["Rage click", "RageClickCount"], ["Quick back", "QuickbackClick"], ["Script error", "ScriptErrorCount"]].map(([n, k]) => [
+          n,
+          num(clSum(k, "subTotal")),
+          esc(clMetric(k).filter((r) => Number(r.subTotal) > 0).sort((a, b) => b.subTotal - a.subTotal).slice(0, 3).map((r) => `${new URL(r.Url).pathname} (${r.subTotal})`).join(", ") || "–")
+        ])
       )
     : "_수집 안 됨_",
   "",
@@ -450,10 +455,11 @@ sec(
 sec(
   "6. 제외 방법과 한계",
   [
-    "- **내 방문:** 코드가 `?notrack=1`(localStorage) 또는 DNT 브라우저에서 GA4·PostHog·Clarity 를 아예 로드하지 않습니다. 따라서 그 브라우저의 방문은 데이터에 없습니다. 하지만 notrack 을 켜기 전이나 다른 기기의 방문은 구분할 수 없습니다. 알려진 id 는 `.env` 의 `EXCLUDE_DISTINCT_IDS` 로 PostHog 쿼리에서 뺄 수 있습니다" + (excluded.length ? ` (현재 ${excluded.length}개 제외 중).` : " (현재 미설정)."),
+    "- **동의한 방문만:** 사이트가 opt-in 이라 '허용'을 누른 브라우저의 방문만 데이터에 있습니다. 모든 수치는 실제 방문보다 작고, 허용한 사람 쪽으로 치우쳐 있습니다. 절대값보다 주간 추세와 비율을 보세요.",
+    "- **내 방문:** 알림에서 거부했거나 `?notrack=1` 로 접속한 브라우저는 도구를 로드하지 않아 데이터에 없습니다. 그 밖에 허용한 내 브라우저가 있다면 그 id 를 `.env` 의 `EXCLUDE_DISTINCT_IDS` 로 PostHog 쿼리에서 뺄 수 있습니다" + (excluded.length ? ` (현재 ${excluded.length}개 제외 중).` : " (현재 미설정)."),
     `- **로컬/미리보기:** GA4 는 hostName=${ANALYTICS_HOST}, PostHog 는 $host=${ANALYTICS_HOST} 로 필터해 localhost·*.pages.dev 를 뺍니다.`,
     "- **봇:** GA4 는 IAB 목록 기반 봇을 자체 제외하고, posthog-js 는 알려진 봇 UA 를 보내지 않습니다. PostHog 쿼리에서는 추가로 구글 렌더러(Nexus 5X Build/MMB29P)·HeadlessChrome·Lighthouse UA 를 뺍니다. GA4 수치에는 이 추가 제외가 적용되지 않아 PostHog 보다 높게 나올 수 있습니다. 1회 세션에 페이지뷰 1개이고 체류시간 0초인 트래픽이 갑자기 늘면 의심하세요.",
-    "- **시간대:** 날짜 경계는 UTC 입니다. PostHog 프로젝트 시간대와 GA4 속성 시간대가 다르면 하루 경계의 수치가 조금 어긋납니다."
+    `- **시간대:** 날짜 경계는 ${TZ} 입니다. PostHog 프로젝트와 GA4 속성의 시간대가 이와 다르면 하루 경계의 수치가 어긋나므로 .env 의 REPORT_TZ 를 맞추세요.`
   ].join("\n")
 );
 
