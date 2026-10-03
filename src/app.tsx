@@ -31,6 +31,7 @@ const routes = defineRoutes([
   }),
   defineRoute({ path: "/saved", component: lazy(() => import("./routes/saved")) }),
   defineRoute({ path: "/about", component: lazy(() => import("./routes/about")) }),
+  defineRoute({ path: "/privacy", component: lazy(() => import("./routes/privacy")) }),
   defineRoute({ path: "*404", component: lazy(() => import("./routes/not-found")) })
 ]);
 

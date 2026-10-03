@@ -4,7 +4,7 @@ import { ANALYTICS } from "~/consts";
  * 방문 분석: GA4(유입·페이지뷰) + Clarity(녹화·히트맵) + PostHog(이벤트·퍼널).
  * 모두 브라우저에서만, hydrate 가 끝난 뒤(initAnalytics) 로드한다. 서버·prerender 에서는 아무것도 하지 않는다.
  *
- * 꺼 두는 방법: 브라우저 설정의 "추적 방지(DNT)", 또는 주소 뒤에 `?notrack=1` 한 번 (이 브라우저에서 계속 제외, `?notrack=0` 으로 해제).
+ * 꺼 두는 방법: /privacy 의 스위치(setTrackingAllowed), 브라우저 설정의 "추적 방지(DNT)", 또는 주소 뒤에 `?notrack=1` 한 번 (`?notrack=0` 으로 해제).
  */
 
 type Props = Record<string, string | number | boolean | undefined>;
@@ -18,7 +18,8 @@ const queue: Array<(p: PostHog) => void> = [];
 
 const w = () => window as unknown as { dataLayer?: unknown[]; gtag?: Gtag; clarity?: (...a: unknown[]) => void };
 
-function optedOut(): boolean {
+/** 이 브라우저가 방문 분석에서 빠져 있는가 (브라우저 전용) */
+export function optedOut(): boolean {
   try {
     const flag = new URLSearchParams(location.search).get("notrack");
     if (flag === "1") localStorage.setItem("notrack", "1");
@@ -28,6 +29,25 @@ function optedOut(): boolean {
     // 저장소를 못 쓰면 DNT 만 확인한다
   }
   return navigator.doNotTrack === "1";
+}
+
+/**
+ * 방문자가 직접 켜고 끈다. 끄면 그 자리에서 세 도구를 멈추고, 이후 방문에서는 아예 불러오지 않는다.
+ * 다시 켜면 다음 페이지 로드부터 수집한다(멈춘 도구를 되살리는 대신 새로 불러온다).
+ */
+export function setTrackingAllowed(allowed: boolean) {
+  try {
+    if (allowed) localStorage.removeItem("notrack");
+    else localStorage.setItem("notrack", "1");
+  } catch {
+    // 저장소를 못 쓰면 이번 방문에만 적용된다
+  }
+  if (allowed) return location.reload();
+  if (!started) return;
+  started = false; // track·trackPageView 가 더 보내지 않는다
+  (window as unknown as Record<string, unknown>)[`ga-disable-${ANALYTICS.ga4}`] = true;
+  w().clarity?.("stop");
+  ph?.opt_out_capturing();
 }
 
 // 봇 UA 목록에 없어 각 도구의 필터를 통과하는 자동화 브라우저. 'Nexus 5X Build/MMB29P' 는 구글 렌더러의 고정 프로필이다.

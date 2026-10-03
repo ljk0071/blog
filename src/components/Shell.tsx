@@ -5,6 +5,7 @@ import { initAnalytics, trackPageView } from "~/lib/analytics";
 import { BookmarksProvider } from "~/lib/bookmarks";
 import { ProgressProvider } from "~/lib/progress";
 import { ThemeProvider } from "~/lib/theme";
+import AnalyticsNotice from "./AnalyticsNotice";
 import ErrorCard from "./ErrorCard";
 import Footer from "./Footer";
 import Header from "./Header";
@@ -39,6 +40,7 @@ const Shell: ParentComponent = (props) => {
             <Errored fallback={(err, reset) => <ErrorCard error={err()} onRetry={reset} />}>{props.children}</Errored>
             <Footer />
             <LinkPreview fallback={null} />
+            <AnalyticsNotice />
           </div>
         </ProgressProvider>
       </BookmarksProvider>

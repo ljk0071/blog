@@ -34,7 +34,7 @@ async function render(urlPath) {
 
 // ---------- 1. 페이지 prerender (링크를 따라가며 크롤링) ----------
 const tags = [...new Set(notes.flatMap((n) => n.tags))];
-const queue = ["/", "/blog", "/tags", "/saved", "/about", ...notes.map((n) => `/blog/${n.id}`), ...tags.map((t) => `/tags/${encodeURIComponent(t)}`)];
+const queue = ["/", "/blog", "/tags", "/saved", "/about", "/privacy", ...notes.map((n) => `/blog/${n.id}`), ...tags.map((t) => `/tags/${encodeURIComponent(t)}`)];
 const done = new Map();
 
 while (queue.length) {
