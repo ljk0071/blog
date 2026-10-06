@@ -97,7 +97,7 @@ async function ga4(dimensions, metrics, range, extra = {}) {
   });
   if (!r.ok) throw new Error(`GA4 ${r.status} ${(await r.text()).slice(0, 300)}`);
   const j = await r.json();
-  return (j.rows ?? []).map((row) => [...row.dimensionValues.map((v) => v.value), ...row.metricValues.map((v) => Number(v.value))]);
+  return (j.rows ?? []).map((row) => [...(row.dimensionValues ?? []).map((v) => v.value), ...row.metricValues.map((v) => Number(v.value))]);
 }
 // 표준 보고서는 처리에 24~48시간이 걸린다. 그 사이 계측이 살아 있는지는 실시간 API(최근 30분)로 본다.
 async function ga4Realtime() {
