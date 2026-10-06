@@ -62,6 +62,9 @@ export const trackingAllowed = () => {
   return c === "granted" || (c === "unset" && !needsConsent());
 };
 
+// Clarity 는 유럽(EEA·영국·스위스) 방문에서 이 신호를 받아야 쿠키를 써서 세션을 잇고 녹화를 남긴다. 광고에는 쓰지 않는다.
+const signalClarityConsent = () => w().clarity?.("consentv2", { ad_Storage: "denied", analytics_Storage: "granted" });
+
 /**
  * 방문자의 선택을 저장하고 바로 적용한다.
  * 허용하면 그 자리에서 도구를 불러오고 지금 보고 있는 페이지부터 기록한다. 거부하면 그 자리에서 멈춘다.
@@ -79,7 +82,8 @@ export function setConsent(granted: boolean) {
     return; // 기억할 수 없으면 수집하지 않는다
   }
   if (granted) {
-    if (started) return; // 기본 수집 지역에서 이미 수집 중이면 선택만 기억한다
+    // 기본 수집 지역에서 이미 수집 중이면 선택만 기억하고 Clarity 에 알린다
+    if (started) return void signalClarityConsent();
     // 이번 방문에서 한 번 멈춘 도구는 되살리지 않고 새로 불러온다
     if (loaded) return location.reload();
     initAnalytics();
@@ -89,6 +93,7 @@ export function setConsent(granted: boolean) {
   if (!started) return;
   started = false; // track·trackPageView 가 더 보내지 않는다
   (window as unknown as Record<string, unknown>)[`ga-disable-${ANALYTICS.ga4}`] = true;
+  w().clarity?.("consent", false); // Clarity 쿠키를 지운다
   w().clarity?.("stop");
   ph?.opt_out_capturing();
 }
@@ -128,6 +133,8 @@ export function initAnalytics() {
     });
     void c;
     loadScript(`https://www.clarity.ms/tag/${ANALYTICS.clarity}`);
+    // 직접 허용한 방문자만 알린다 (스크립트가 뜨기 전이면 위의 큐에 쌓였다가 처리된다)
+    if (consent() === "granted") signalClarityConsent();
   }
 
   if (ANALYTICS.posthogKey) {
