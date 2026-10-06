@@ -1,12 +1,12 @@
 import { Show, createSignal, onSettled } from "solid-js";
 import PageHead from "~/components/PageHead";
-import { consent, setConsent } from "~/lib/analytics";
+import { setConsent, trackingAllowed } from "~/lib/analytics";
 
 export default function Privacy() {
   // 서버·첫 렌더에서는 알 수 없다 → hydrate 후에 이 브라우저의 선택을 읽는다
   const [on, setOn] = createSignal<boolean | null>(null);
   onSettled(() => {
-    setOn(consent() === "granted");
+    setOn(trackingAllowed());
   });
   const toggle = () => {
     const next = !on();
@@ -20,7 +20,7 @@ export default function Privacy() {
       <p class="hand">정원에 남는 발자국</p>
       <h1>방문 분석 안내</h1>
       <p>
-        어떤 글이 읽히는지, 어디서 막히는지 알고 싶어서 방문 분석 도구 세 가지를 쓰고 있어요. 허용한 브라우저에서만 수집하고, 이름·이메일 같은 정보는 받지 않으며, 광고에도 쓰지 않습니다. 아래 스위치로 언제든 바꿀 수 있어요.
+        어떤 글이 읽히는지, 어디서 막히는지 알고 싶어서 방문 분석 도구 세 가지를 쓰고 있어요. 이름·이메일 같은 정보는 받지 않고, 광고에도 쓰지 않습니다. 아래 스위치로 언제든 끄고 켤 수 있어요.
       </p>
 
       <div class="privacy-switch card">
@@ -36,7 +36,9 @@ export default function Privacy() {
           {on() ? "끄기" : "허용하기"}
         </button>
       </div>
-      <p class="muted small">이 선택은 이 브라우저에만 저장돼요. 다른 기기나 브라우저에서는 따로 고르게 됩니다.</p>
+      <p class="muted small">
+        유럽에서 접속하면 허용한 경우에만 수집해요. 그 밖의 지역에서는 기본으로 수집하고, 여기서 끄면 바로 멈춥니다. 지역은 브라우저의 시간대로 판단해요. 이 선택은 이 브라우저에만 저장됩니다.
+      </p>
 
       <h2>무엇을 수집하나요</h2>
       <table>
@@ -70,7 +72,9 @@ export default function Privacy() {
       <ul>
         <li>세 도구는 방문자를 구분하려고 쿠키나 브라우저 저장소에 무작위 식별자를 저장해요. 누구인지는 알 수 없고, 같은 브라우저인지만 구분합니다.</li>
         <li>IP 주소로 추정한 국가·도시 수준의 위치가 함께 기록돼요.</li>
-        <li>기록은 Google, PostHog, Microsoft 의 서버(주로 미국)에 저장되고, 각 서비스의 보존 기간이 지나면 지워져요.</li>
+        <li>
+          기록은 방문하는 동안 네트워크로 Google LLC, PostHog Inc., Microsoft Corporation 의 서버(미국)에 전송되어 보관돼요. 전송되는 항목은 위 표와 같고, 각 서비스의 보존 기간이 지나면 지워져요. 원하지 않으면 위 스위치로 끌 수 있어요.
+        </li>
         <li>읽기 진행도와 북마크는 분석과 별개로 이 브라우저 안에만 저장되고 어디로도 보내지 않아요.</li>
       </ul>
       <p class="muted small">

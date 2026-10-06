@@ -26,5 +26,5 @@ Cloudflare Pages: build `npm run build`, output `dist`, Node 22.
 - 완독(`note_read_complete`): 본문 끝이 화면에 들어왔고, 예상 읽기 시간의 30% 이상 머문 경우. 탭 세션당 노트마다 한 번. 화면의 "✓ 읽음"(스크롤 96%)과는 별개.
 - JS 에러(`$exception`)·Web Vitals 는 PostHog 로 수집. 자동화 브라우저(구글 렌더러·Headless·Lighthouse)에서는 로드하지 않는다.
 - 주간 보고서: `node scripts/report.mjs` → `reports/YYYY-WW.md`. 키는 `.env`(커밋 금지): `GA4_PROPERTY_ID`, `GA4_SA_JSON_PATH`, `POSTHOG_PERSONAL_KEY`, `CLARITY_TOKEN`. 선택: `REPORT_TZ`(기본 Asia/Seoul), `EXCLUDE_DISTINCT_IDS`. GA4 표준 보고서는 하루쯤 늦으므로 화요일 이후에 돌린다.
-- 동의(opt-in): 방문자가 허용하기 전에는 어떤 도구도 로드하지 않는다. 첫 방문 알림(`AnalyticsNotice`)의 허용/거부, `/privacy` 페이지의 스위치, 푸터 링크. 수집 항목을 바꾸면 `/privacy` 의 표도 고친다.
+- 동의: 유럽 시간대(`needsConsent`)에서는 허용 전까지 어떤 도구도 로드하지 않는다(opt-in). 그 밖의 지역은 기본으로 로드하고 첫 방문 알림(`AnalyticsNotice`)과 `/privacy` 스위치로 끌 수 있다(opt-out). 수집 항목이나 이전받는 곳을 바꾸면 `/privacy` 도 고친다.
 - 내 방문 제외: 알림에서 거부하거나 `?notrack=1` (해제 `?notrack=0`).
