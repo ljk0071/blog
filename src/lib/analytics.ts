@@ -4,7 +4,8 @@ import { ANALYTICS } from "~/consts";
  * 방문 분석: GA4(유입·페이지뷰) + Clarity(녹화·히트맵) + PostHog(이벤트·퍼널).
  * 모두 브라우저에서만, hydrate 가 끝난 뒤(initAnalytics) 로드한다. 서버·prerender 에서는 아무것도 하지 않는다.
  *
- * 동의(opt-in): 방문자가 허용한 브라우저에서만 로드한다. 첫 방문 알림(AnalyticsNotice)이나 /privacy 의 스위치로 고른다(setConsent).
+ * 동의: 유럽에서 접속하면 허용한 경우에만 로드한다(opt-in). 그 밖의 지역은 기본으로 로드하고 거부할 수 있다(opt-out).
+ * 첫 방문 알림(AnalyticsNotice)이나 /privacy 의 스위치로 고른다(setConsent).
  * 주소 뒤에 `?notrack=1` 을 한 번 붙이면 거부로 저장된다(`?notrack=0` 으로 해제).
  */
 
@@ -43,6 +44,25 @@ export function consent(): Consent {
 }
 
 /**
+ * 사전 동의가 필요한 지역인가. 정적 사이트라 접속 국가를 알 수 없어 브라우저 시간대로 추정한다.
+ * 유럽 시간대(EU·EEA·영국·스위스를 넓게 포함)와 유럽에 속한 대서양·북극 섬이면 true. 시간대를 알 수 없으면 필요한 쪽으로 본다.
+ */
+export function needsConsent(): boolean {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return !tz || /^(Europe\/|Arctic\/Longyearbyen$|Atlantic\/(Reykjavik|Canary|Madeira|Azores|Faroe)$)/.test(tz);
+  } catch {
+    return true;
+  }
+}
+
+/** 지금 이 브라우저에서 수집해도 되는가: 허용했거나, 아직 고르지 않았고 사전 동의가 필요 없는 지역일 때 */
+export const trackingAllowed = () => {
+  const c = consent();
+  return c === "granted" || (c === "unset" && !needsConsent());
+};
+
+/**
  * 방문자의 선택을 저장하고 바로 적용한다.
  * 허용하면 그 자리에서 도구를 불러오고 지금 보고 있는 페이지부터 기록한다. 거부하면 그 자리에서 멈춘다.
  */
@@ -59,6 +79,7 @@ export function setConsent(granted: boolean) {
     return; // 기억할 수 없으면 수집하지 않는다
   }
   if (granted) {
+    if (started) return; // 기본 수집 지역에서 이미 수집 중이면 선택만 기억한다
     // 이번 방문에서 한 번 멈춘 도구는 되살리지 않고 새로 불러온다
     if (loaded) return location.reload();
     initAnalytics();
@@ -83,7 +104,7 @@ function loadScript(src: string) {
 }
 
 export function initAnalytics() {
-  if (started || typeof window === "undefined" || consent() !== "granted" || isAutomated()) return;
+  if (started || typeof window === "undefined" || !trackingAllowed() || isAutomated()) return;
   started = true;
   loaded = true;
 
